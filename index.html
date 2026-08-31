@@ -1017,7 +1017,6 @@
         let currentTaskId = null;
         let selectedFile = null;
         let selectedModel = 'nanodet';
-        let downloadBlobUrl = null;
         let hasShownDownload = false;
         let statusPollInterval = null;
         let API_BASE = '';
@@ -1203,10 +1202,6 @@
             document.getElementById('outputPreview').src = '';
             document.getElementById('outputPreviewImg').src = '';
             hasShownDownload = false;
-            if (downloadBlobUrl) {
-                URL.revokeObjectURL(downloadBlobUrl);
-                downloadBlobUrl = null;
-            }
             if (statusPollInterval) {
                 clearInterval(statusPollInterval);
                 statusPollInterval = null;
@@ -1262,6 +1257,15 @@
                 const inferData = await inferRes.json();
                 updateProgress(inferData);
                 logToFrontend('Inference started: ' + inferData.status);
+
+                if (selectedFile && selectedFile.type.startsWith('video/')) {
+                    const previewSection = document.getElementById('previewSection');
+                    const videoPreview = document.getElementById('outputPreview');
+                    videoPreview.src = apiUrl(`/api/stream/${currentTaskId}`);
+                    videoPreview.style.display = 'block';
+                    document.getElementById('outputPreviewImg').style.display = 'none';
+                    previewSection.style.display = 'block';
+                }
 
                 startStatusPolling();
             } catch (err) {
@@ -1370,48 +1374,13 @@
         }
 
         async function showDownload() {
-            try {
-                const res = await fetch(apiUrl(`/api/download/${currentTaskId}`), {
-                    headers: { 'skip_zrok_interstitial': 'true' }
-                });
-                const blob = await res.blob();
-                const url = URL.createObjectURL(blob);
-
-                const previewSection = document.getElementById('previewSection');
-                const videoPreview = document.getElementById('outputPreview');
-                const imgPreview = document.getElementById('outputPreviewImg');
-
-                if (selectedFile && selectedFile.type.startsWith('image/')) {
-                    videoPreview.style.display = 'none';
-                    imgPreview.style.display = 'block';
-                    imgPreview.src = url;
-                    previewSection.style.display = 'block';
-                } else if (selectedFile && selectedFile.type.startsWith('video/')) {
-                    imgPreview.style.display = 'none';
-                    videoPreview.style.display = 'block';
-                    videoPreview.src = url;
-                    previewSection.style.display = 'block';
-                }
-
-                downloadBtn.onclick = (e) => {
-                    e.preventDefault();
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = selectedFile ? `inference_result_${selectedFile.name}` : 'result.mp4';
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-                };
-                downloadBtn.href = '#';
-                downloadHint.textContent = selectedFile && selectedFile.type.startsWith('image/') 
-                    ? 'Annotated image ready' 
-                    : 'Annotated video ready';
-                downloadSection.classList.add('visible');
-            } catch (e) {
-                downloadBtn.href = apiUrl(`/api/download/${currentTaskId}`);
-                downloadHint.textContent = 'Download result';
-                downloadSection.classList.add('visible');
-            }
+            downloadBtn.href = apiUrl(`/api/download/${currentTaskId}`);
+            downloadBtn.download = selectedFile ? `inference_result_${selectedFile.name}` : 'result.mp4';
+            downloadBtn.onclick = null;
+            downloadHint.textContent = selectedFile && selectedFile.type.startsWith('image/') 
+                ? 'Annotated image ready' 
+                : 'Annotated video ready';
+            downloadSection.classList.add('visible');
         }
 
         loadConfig();
