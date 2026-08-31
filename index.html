@@ -1225,6 +1225,7 @@
             try {
                 const uploadRes = await fetch(apiUrl('/api/upload'), {
                     method: 'POST',
+                    mode:"cors",
                     body: formData,
                 });
                 if (!uploadRes.ok) throw new Error('Upload failed');
