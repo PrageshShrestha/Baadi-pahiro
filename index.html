@@ -1019,6 +1019,7 @@
         let selectedModel = 'nanodet';
         let hasShownDownload = false;
         let statusPollInterval = null;
+        let streamPollInterval = null;
         let API_BASE = '';
         let WS_BASE = '';
         let configLoaded = false;
@@ -1206,6 +1207,10 @@
                 clearInterval(statusPollInterval);
                 statusPollInterval = null;
             }
+            if (streamPollInterval) {
+                clearInterval(streamPollInterval);
+                streamPollInterval = null;
+            }
             const logEl = document.getElementById('frontendLog');
             const contentEl = document.getElementById('frontendLogContent');
             if (logEl && contentEl) {
@@ -1258,15 +1263,25 @@
                 updateProgress(inferData);
                 logToFrontend('Inference started: ' + inferData.status);
 
-                const previewSection = document.getElementById('previewSection');
-                const videoPreview = document.getElementById('outputPreview');
-                previewSection.style.display = 'block';
-                videoPreview.style.display = 'block';
-                document.getElementById('outputPreviewImg').style.display = 'none';
-                videoPreview.src = apiUrl(`/api/stream/${currentTaskId}`);
-                videoPreview.load();
+                try {
+                    const previewSection = document.getElementById('previewSection');
+                    const videoPreview = document.getElementById('outputPreview');
+                    previewSection.style.display = 'block';
+                    videoPreview.style.display = 'block';
+                    document.getElementById('outputPreviewImg').style.display = 'none';
+                    const streamUrl = apiUrl(`/api/stream/${currentTaskId}`) + '?t=' + Date.now();
+                    console.log('[Stream] Fetching', streamUrl);
+                    fetch(streamUrl, { method: 'HEAD' }).then(r => {
+                        console.log('[Stream] HEAD status:', r.status);
+                    }).catch(e => console.error('[Stream] HEAD error:', e));
+                    videoPreview.src = streamUrl;
+                    videoPreview.load();
+                } catch (e) {
+                    console.error('Stream start error:', e);
+                }
 
                 startStatusPolling();
+                startStreamPolling();
             } catch (err) {
                 showStatus(err.message, 'error');
                 logToFrontend('Error: ' + err.message);
@@ -1311,6 +1326,19 @@
             }, 1000);
         }
 
+        function startStreamPolling() {
+            if (streamPollInterval) clearInterval(streamPollInterval);
+            streamPollInterval = setInterval(() => {
+                if (!currentTaskId) return;
+                const videoPreview = document.getElementById('outputPreview');
+                if (!videoPreview) return;
+                const streamUrl = apiUrl(`/api/stream/${currentTaskId}`) + '?t=' + Date.now();
+                console.log('[StreamPoll] Re-requesting', streamUrl);
+                videoPreview.src = streamUrl;
+                videoPreview.load();
+            }, 2000);
+        }
+
         function updateProgress(data) {
             const progress = Math.min(data.progress, 100);
             progressBar.style.width = progress + '%';
@@ -1337,9 +1365,14 @@
                     const secs = Math.floor(data.eta_seconds % 60);
                     etaValue.textContent = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
                 }
+                if (!isImage) startStreamPolling();
             } else if (data.status === 'completed') {
                 if (!hasShownDownload) {
                     hasShownDownload = true;
+                    if (streamPollInterval) {
+                        clearInterval(streamPollInterval);
+                        streamPollInterval = null;
+                    }
                     showStatus('Inference completed', 'success');
                     logToFrontend('Inference completed');
                     progressBar.style.width = '100%';
@@ -1351,6 +1384,10 @@
                     showDownload();
                 }
             } else if (data.status === 'failed') {
+                if (streamPollInterval) {
+                    clearInterval(streamPollInterval);
+                    streamPollInterval = null;
+                }
                 showStatus(data.message || 'Inference failed', 'error');
                 logToFrontend('Failed: ' + (data.message || 'Inference failed'));
                 setLoading(false);
