@@ -1224,11 +1224,11 @@
 
             try {
                 const uploadRes = await fetch(apiUrl('/api/upload'), {
+                    mode:"cors",
                     method: 'POST',
                     headers: {
-    'skip_zrok_interstitial': 'true'
-  },
-                    mode:"cors",
+                        'skip_zrok_interstitial': 'true'
+                    },
                     body: formData,
                 });
                 if (!uploadRes.ok) throw new Error('Upload failed');
@@ -1241,7 +1241,10 @@
 
                 const inferRes = await fetch(apiUrl(`/api/infer/${currentTaskId}`), {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'skip_zrok_interstitial': 'true'
+                    },
                     body: JSON.stringify({
                         model_type: selectedModel,
                         score_threshold: parseFloat(thresholdRange.value),
@@ -1272,7 +1275,9 @@
         async function pollStatus() {
             if (!currentTaskId) return;
             try {
-                const res = await fetch(apiUrl(`/api/status/${currentTaskId}`));
+                const res = await fetch(apiUrl(`/api/status/${currentTaskId}`), {
+                    headers: { 'skip_zrok_interstitial': 'true' }
+                });
                 const data = await res.json();
                 updateProgress(data);
                 if (data.status === 'processing' || data.status === 'queued') {
@@ -1288,7 +1293,9 @@
             statusPollInterval = setInterval(async () => {
                 if (!currentTaskId) return;
                 try {
-                    const res = await fetch(apiUrl(`/api/status/${currentTaskId}`));
+                    const res = await fetch(apiUrl(`/api/status/${currentTaskId}`), {
+                        headers: { 'skip_zrok_interstitial': 'true' }
+                    });
                     const data = await res.json();
                     updateProgress(data);
                     if (data.status === 'completed' || data.status === 'failed') {
@@ -1364,7 +1371,9 @@
 
         async function showDownload() {
             try {
-                const res = await fetch(apiUrl(`/api/download/${currentTaskId}`));
+                const res = await fetch(apiUrl(`/api/download/${currentTaskId}`), {
+                    headers: { 'skip_zrok_interstitial': 'true' }
+                });
                 const blob = await res.blob();
                 const url = URL.createObjectURL(blob);
 
