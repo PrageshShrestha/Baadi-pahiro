@@ -1261,10 +1261,11 @@
                 if (selectedFile && selectedFile.type.startsWith('video/')) {
                     const previewSection = document.getElementById('previewSection');
                     const videoPreview = document.getElementById('outputPreview');
-                    videoPreview.src = apiUrl(`/api/stream/${currentTaskId}`);
+                    previewSection.style.display = 'block';
                     videoPreview.style.display = 'block';
                     document.getElementById('outputPreviewImg').style.display = 'none';
-                    previewSection.style.display = 'block';
+                    videoPreview.src = apiUrl(`/api/stream/${currentTaskId}`);
+                    videoPreview.load();
                 }
 
                 startStatusPolling();
