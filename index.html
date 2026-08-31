@@ -1225,6 +1225,7 @@
             try {
                 const uploadRes = await fetch(apiUrl('/api/upload'), {
                     method: 'POST',
+                    headers: { 'Content-Type': 'application/json',},
                     mode:"cors",
                     body: formData,
                 });
