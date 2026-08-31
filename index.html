@@ -1258,15 +1258,13 @@
                 updateProgress(inferData);
                 logToFrontend('Inference started: ' + inferData.status);
 
-                if (selectedFile && selectedFile.type.startsWith('video/')) {
-                    const previewSection = document.getElementById('previewSection');
-                    const videoPreview = document.getElementById('outputPreview');
-                    previewSection.style.display = 'block';
-                    videoPreview.style.display = 'block';
-                    document.getElementById('outputPreviewImg').style.display = 'none';
-                    videoPreview.src = apiUrl(`/api/stream/${currentTaskId}`);
-                    videoPreview.load();
-                }
+                const previewSection = document.getElementById('previewSection');
+                const videoPreview = document.getElementById('outputPreview');
+                previewSection.style.display = 'block';
+                videoPreview.style.display = 'block';
+                document.getElementById('outputPreviewImg').style.display = 'none';
+                videoPreview.src = apiUrl(`/api/stream/${currentTaskId}`);
+                videoPreview.load();
 
                 startStatusPolling();
             } catch (err) {
