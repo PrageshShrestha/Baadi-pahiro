@@ -1225,7 +1225,9 @@
             try {
                 const uploadRes = await fetch(apiUrl('/api/upload'), {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json',},
+                    headers: {
+    'skip_zrok_interstitial': 'true'
+  },
                     mode:"cors",
                     body: formData,
                 });
