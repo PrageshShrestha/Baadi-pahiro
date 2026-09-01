@@ -1,7 +1,36 @@
 <!DOCTYPE html>
 
-<html lang="en"> <head> <meta charset="UTF-8"> <title>Redirecting...</title> </head> <body>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Redirecting...</title>
+</head>
+<body>
 
-<script> (async () => { try { const response = await fetch( "https://raw.githubusercontent.com/PrageshShrestha/hasslefree/main/hopev.json" ); if (!response.ok) { throw new Error("Failed to fetch config"); } const config = await response.json(); const base = (config.api_base_url || "").trim(); if (!base) { throw new Error("api_base_url not found"); } // Make sure the destination uses HTTPS const destination = "https://" + base .replace(/^https?:\/\//, "") .replace(/\/+$/, ""); // Redirect window.location.replace(destination); } catch (error) { console.error("Redirect failed:", error); document.body.innerHTML = "Unable to redirect."; } })(); </script>
+<script>
+fetch("https://raw.githubusercontent.com/PrageshShrestha/hasslefree/main/hopev.json")
+    .then(function(response) {
+        return response.json();
+    })
+    .then(function(config) {
+        var base = config.api_base_url;
 
-</body> </html>
+        if (!base) {
+            throw new Error("api_base_url not found");
+        }
+
+        base = base.trim();
+        base = base.replace(/^https?:\/\//, "");
+        base = base.replace(/\/+$/, "");
+
+        window.location.replace("https://" + base);
+    })
+    .catch(function(error) {
+        console.error(error);
+        document.body.innerText = "Redirect failed: " + error.message;
+    });
+</script>
+
+</body>
+</html>
+
