@@ -870,6 +870,49 @@
         .btn-loading .spinner {
             margin-right: 8px;
         }
+
+        /* Player Controls */
+        .player-controls input[type="range"] {
+            -webkit-appearance: none;
+            height: 4px;
+            background: var(--divider-soft);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .player-controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .player-controls input[type="range"]::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .controls-row .btn-secondary:hover {
+            background: var(--canvas-parchment);
+        }
+
+        .controls-row .btn-secondary.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        #liveBtn.active {
+            background: #ff3b30;
+            color: white;
+            border-color: #ff3b30;
+        }
     </style>
 </head>
 <body>
@@ -964,8 +1007,29 @@
             </div>
 
             <div class="preview-section" id="previewSection" style="display: none; margin-top: 32px; text-align: center;">
-                <video id="outputPreview" controls style="max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--divider-soft);"></video>
+                <canvas id="outputCanvas" style="max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--divider-soft); display: none;"></canvas>
+                <video id="outputPreview" controls style="max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--divider-soft); display: none;"></video>
                 <img id="outputPreviewImg" style="max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--divider-soft); display: none;" />
+            </div>
+
+            <div class="player-controls" id="playerControls" style="display: none; margin-top: 24px;">
+                <div class="timeline-container">
+                    <input type="range" id="timelineSlider" min="0" max="100" value="0" style="width: 100%;">
+                    <div class="timeline-labels" style="display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-muted-48); margin-top: 4px;">
+                        <span id="currentTime">0:00</span>
+                        <span id="bufferedProgress">Buffered: 0%</span>
+                        <span id="totalTime">--:--</span>
+                    </div>
+                </div>
+                <div class="controls-row" style="display: flex; justify-content: center; gap: 12px; margin-top: 16px;">
+                    <button id="playPauseBtn" class="btn btn-secondary" style="padding: 8px 16px; border-radius: var(--radius-sm); border: 1px solid var(--hairline); background: white; cursor: pointer;">▶ Play</button>
+                    <button id="liveBtn" class="btn btn-secondary" style="padding: 8px 16px; border-radius: var(--radius-sm); border: 1px solid var(--hairline); background: white; cursor: pointer;">🔴 Live</button>
+                </div>
+                <div class="stats-row" style="display: flex; justify-content: center; gap: 24px; margin-top: 16px; font-size: 13px; color: var(--ink-muted-48);">
+                    <span id="liveFps">FPS: 0</span>
+                    <span id="frameCount">Frames: 0</span>
+                    <span id="detectionCount">Detections: 0</span>
+                </div>
             </div>
 
             <div class="status-message" id="statusMessage"></div>
@@ -1019,10 +1083,12 @@
         let selectedModel = 'nanodet';
         let hasShownDownload = false;
         let statusPollInterval = null;
-        let streamPollInterval = null;
         let API_BASE = '';
         let WS_BASE = '';
         let configLoaded = false;
+        let ws = null;
+        let streamPlayer = null;
+        let fileSizeLimit = 500 * 1024 * 1024; // 500MB
 
         const CONFIG_URL = 'https://raw.githubusercontent.com/PrageshShrestha/hasslefree/main/hopev.json';
 
@@ -1033,13 +1099,19 @@
                 const cfg = await res.json();
                 const base = (cfg.api_base_url || '').trim();
                 if (!base) throw new Error('Empty api_base_url');
-                API_BASE = 'https://' + base.replace(/^https?:\/\//, '').replace(/\/+$/, '');
-                WS_BASE = API_BASE.replace(/^https:\/\//, 'wss://');
-                console.log('Config loaded:', API_BASE, WS_BASE);
+                if (window.location.hostname === 'localhost' || window.location.hostname.startsWith('10.') || window.location.hostname.startsWith('192.168.') || window.location.hostname.startsWith('127.')) {
+                    API_BASE = window.location.origin;
+                    WS_BASE = API_BASE.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://');
+                    console.log('Using local origin:', API_BASE);
+                } else {
+                    API_BASE = 'https://' + base.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+                    WS_BASE = API_BASE.replace(/^https:\/\//, 'wss://');
+                    console.log('Config loaded:', API_BASE, WS_BASE);
+                }
             } catch (e) {
                 console.error('Config load failed:', e);
-                API_BASE = '';
-                WS_BASE = '';
+                API_BASE = window.location.origin;
+                WS_BASE = API_BASE.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://');
             }
         }
 
@@ -1049,6 +1121,228 @@
 
         function wsUrl(taskId) {
             return WS_BASE + '/ws/' + taskId;
+        }
+
+        class StreamPlayer {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.frameBuffer = [];
+                this.isPlaying = false;
+                this.isLive = true;
+                this.currentFrameIdx = 0;
+                this.lastFrameTime = 0;
+                this.fps = 0;
+                this.mediaRecorder = null;
+                this.recordedChunks = [];
+                this.isRecording = false;
+                this.animationFrameId = null;
+            }
+
+            async displayFrame(frame) {
+                if (!frame.image) {
+                    const blob = new Blob([frame.jpeg], {type: 'image/jpeg'});
+                    const url = URL.createObjectURL(blob);
+                    frame.image = new Image();
+                    await new Promise((resolve) => {
+                        frame.image.onload = () => {
+                            URL.revokeObjectURL(url);
+                            resolve();
+                        };
+                        frame.image.src = url;
+                    });
+                }
+
+                this.canvas.width = frame.image.width;
+                this.canvas.height = frame.image.height;
+                this.ctx.drawImage(frame.image, 0, 0);
+
+                if (frame.detections && frame.detections.length > 0) {
+                    this.drawDetections(frame.detections);
+                }
+
+                const now = performance.now();
+                if (this.lastFrameTime) {
+                    this.fps = 1000 / (now - this.lastFrameTime);
+                }
+                this.lastFrameTime = now;
+
+                if (this.isRecording && this.canvas.captureStream) {
+                    // Frame is already on canvas, will be captured by MediaRecorder
+                }
+            }
+
+            drawDetections(detections) {
+                for (const det of detections) {
+                    const [x1, y1, x2, y2] = det.bbox.map(Math.round);
+                    this.ctx.strokeStyle = '#00ff00';
+                    this.ctx.lineWidth = 2;
+                    this.ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+
+                    const label = `${det.class_name || 'object'} ${(det.score * 100).toFixed(0)}%`;
+                    this.ctx.font = '14px Inter, sans-serif';
+                    const textWidth = this.ctx.measureText(label).width;
+                    this.ctx.fillStyle = '#00ff00';
+                    this.ctx.fillRect(x1, y1 - 20, textWidth + 8, 20);
+                    this.ctx.fillStyle = '#000000';
+                    this.ctx.fillText(label, x1 + 4, y1 - 6);
+                }
+            }
+
+            onFrameReceived(jpegBytes, frameIdx, detections, timestamp) {
+                const frame = {
+                    jpeg: jpegBytes,
+                    frameIdx: frameIdx,
+                    detections: detections,
+                    timestamp: timestamp,
+                    image: null
+                };
+
+                this.frameBuffer.push(frame);
+                this.updateTimeline();
+
+                if (this.isLive) {
+                    this.displayFrame(frame);
+                }
+
+                this.updateStats();
+            }
+
+            seekTo(position) {
+                const frameIdx = Math.floor(position * this.frameBuffer.length / 100);
+                if (frameIdx >= 0 && frameIdx < this.frameBuffer.length) {
+                    this.isLive = false;
+                    this.currentFrameIdx = frameIdx;
+                    this.displayFrame(this.frameBuffer[frameIdx]);
+                    this.updateLiveButton();
+                }
+            }
+
+            goLive() {
+                this.isLive = true;
+                this.currentFrameIdx = this.frameBuffer.length - 1;
+                if (this.frameBuffer.length > 0) {
+                    this.displayFrame(this.frameBuffer[this.currentFrameIdx]);
+                }
+                this.updateLiveButton();
+            }
+
+            play() {
+                this.isPlaying = true;
+                this.isLive = false;
+                this.playbackLoop();
+            }
+
+            pause() {
+                this.isPlaying = false;
+            }
+
+            async playbackLoop() {
+                while (this.isPlaying && this.currentFrameIdx < this.frameBuffer.length - 1) {
+                    this.currentFrameIdx++;
+                    await this.displayFrame(this.frameBuffer[this.currentFrameIdx]);
+                    await new Promise(r => setTimeout(r, 1000 / 30));
+                }
+
+                if (this.currentFrameIdx >= this.frameBuffer.length - 1) {
+                    this.goLive();
+                }
+            }
+
+            startRecording() {
+                if (!this.canvas.captureStream) {
+                    alert('Recording not supported in this browser');
+                    return false;
+                }
+
+                const stream = this.canvas.captureStream(30);
+                const mimeType = MediaRecorder.isTypeSupported('video/webm;codecs=vp9')
+                    ? 'video/webm;codecs=vp9'
+                    : 'video/webm';
+
+                this.mediaRecorder = new MediaRecorder(stream, { mimeType });
+                this.recordedChunks = [];
+
+                this.mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) this.recordedChunks.push(e.data);
+                };
+
+                this.mediaRecorder.start(100);
+                this.isRecording = true;
+                return true;
+            }
+
+            stopRecording() {
+                return new Promise((resolve) => {
+                    if (!this.mediaRecorder) {
+                        resolve(null);
+                        return;
+                    }
+
+                    this.mediaRecorder.onstop = () => {
+                        const blob = new Blob(this.recordedChunks, {type: 'video/webm'});
+                        this.isRecording = false;
+                        this.mediaRecorder = null;
+                        resolve(blob);
+                    };
+
+                    this.mediaRecorder.stop();
+                });
+            }
+
+            saveRecording(blob) {
+                if (!blob) return;
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `inference_${currentTaskId.slice(0, 8)}.webm`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }
+
+            updateTimeline() {
+                const slider = document.getElementById('timelineSlider');
+                const buffered = this.frameBuffer.length;
+                const total = parseInt(document.getElementById('totalFrames').textContent) || buffered;
+
+                slider.max = total;
+                slider.value = buffered;
+
+                const pct = total > 0 ? Math.round(buffered / total * 100) : 0;
+                document.getElementById('bufferedProgress').textContent = `Buffered: ${pct}%`;
+            }
+
+            updateStats() {
+                document.getElementById('liveFps').textContent = `FPS: ${this.fps.toFixed(1)}`;
+                document.getElementById('frameCount').textContent = `Frames: ${this.frameBuffer.length}`;
+            }
+
+            updateLiveButton() {
+                const btn = document.getElementById('liveBtn');
+                if (this.isLive) {
+                    btn.textContent = '🔴 LIVE';
+                    btn.classList.add('active');
+                } else {
+                    btn.textContent = '🔴 Live';
+                    btn.classList.remove('active');
+                }
+            }
+
+            reset() {
+                this.frameBuffer = [];
+                this.isPlaying = false;
+                this.isLive = true;
+                this.currentFrameIdx = 0;
+                this.lastFrameTime = 0;
+                this.fps = 0;
+                this.isRecording = false;
+                if (this.mediaRecorder) {
+                    try { this.mediaRecorder.stop(); } catch(e) {}
+                    this.mediaRecorder = null;
+                }
+                this.recordedChunks = [];
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            }
         }
 
         const uploadZone = document.getElementById('uploadZone');
@@ -1079,7 +1373,6 @@
         const downloadHint = document.getElementById('downloadHint');
         const resultsTile = document.getElementById('resultsTile');
 
-        // Model selection
         modelNanodet.addEventListener('click', () => selectModel('nanodet'));
         modelRfdetr.addEventListener('click', () => selectModel('rfdetr'));
 
@@ -1089,7 +1382,6 @@
             modelRfdetr.classList.toggle('selected', model === 'rfdetr');
         }
 
-        // Upload zone events
         uploadZone.addEventListener('click', () => fileInput.click());
         uploadZone.addEventListener('dragover', (e) => {
             e.preventDefault();
@@ -1138,8 +1430,6 @@
             }
 
             selectedFile = file;
-
-            // Update UI
             uploadZone.classList.add('has-file');
             fileName.textContent = file.name;
             fileMeta.textContent = `${formatFileSize(file.size)} • ${file.type}`;
@@ -1147,7 +1437,6 @@
             runBtn.disabled = false;
             hideStatus();
 
-            // Preview
             const url = URL.createObjectURL(file);
             if (file.type.startsWith('image/')) {
                 uploadPreview.src = url;
@@ -1187,6 +1476,47 @@
             }
         }
 
+        document.getElementById('playPauseBtn').addEventListener('click', () => {
+            if (!streamPlayer) return;
+            if (streamPlayer.isPlaying) {
+                streamPlayer.pause();
+                document.getElementById('playPauseBtn').textContent = '▶ Play';
+            } else {
+                streamPlayer.play();
+                document.getElementById('playPauseBtn').textContent = '⏸ Pause';
+            }
+        });
+
+        document.getElementById('liveBtn').addEventListener('click', () => {
+            if (streamPlayer) streamPlayer.goLive();
+        });
+
+        document.getElementById('timelineSlider').addEventListener('input', (e) => {
+            if (streamPlayer) streamPlayer.seekTo(parseInt(e.target.value));
+        });
+
+        downloadBtn.addEventListener('click', async () => {
+            if (!currentTaskId) return;
+
+            const fileSize = parseInt(downloadBtn.dataset.fileSize || '0');
+            const isLargeFile = fileSize > fileSizeLimit;
+
+            if (isLargeFile) {
+                window.location.href = apiUrl(`/api/download/${currentTaskId}`);
+            } else {
+                if (streamPlayer && streamPlayer.isRecording) {
+                    const blob = await streamPlayer.stopRecording();
+                    streamPlayer.saveRecording(blob);
+                    downloadBtn.textContent = '↓ Save Recording';
+                } else if (streamPlayer && streamPlayer.frameBuffer.length > 0) {
+                    streamPlayer.startRecording();
+                    downloadBtn.textContent = '⏹ Stop & Save';
+                } else {
+                    window.location.href = apiUrl(`/api/download/${currentTaskId}`);
+                }
+            }
+        });
+
         runBtn.addEventListener('click', async () => {
             if (!selectedFile) return;
             if (!API_BASE) {
@@ -1199,18 +1529,28 @@
             statsGrid.style.display = 'grid';
             resultsTile.classList.add('visible');
             downloadSection.classList.remove('visible');
-            document.getElementById('previewSection').style.display = 'none';
-            document.getElementById('outputPreview').src = '';
-            document.getElementById('outputPreviewImg').src = '';
+            document.getElementById('previewSection').style.display = 'block';
+            document.getElementById('playerControls').style.display = 'block';
+            document.getElementById('outputCanvas').style.display = 'block';
+            document.getElementById('outputPreview').style.display = 'none';
+            document.getElementById('outputPreviewImg').style.display = 'none';
             hasShownDownload = false;
             if (statusPollInterval) {
                 clearInterval(statusPollInterval);
                 statusPollInterval = null;
             }
-            if (streamPollInterval) {
-                clearInterval(streamPollInterval);
-                streamPollInterval = null;
+
+            if (ws) {
+                try { ws.close(); } catch(e) {}
+                ws = null;
             }
+
+            if (streamPlayer) {
+                streamPlayer.reset();
+            }
+            streamPlayer = new StreamPlayer('outputCanvas');
+            streamPlayer.updateLiveButton();
+
             const logEl = document.getElementById('frontendLog');
             const contentEl = document.getElementById('frontendLogContent');
             if (logEl && contentEl) {
@@ -1263,25 +1603,8 @@
                 updateProgress(inferData);
                 logToFrontend('Inference started: ' + inferData.status);
 
-                try {
-                    const previewSection = document.getElementById('previewSection');
-                    const videoPreview = document.getElementById('outputPreview');
-                    previewSection.style.display = 'block';
-                    videoPreview.style.display = 'block';
-                    document.getElementById('outputPreviewImg').style.display = 'none';
-                    const streamUrl = apiUrl(`/api/stream/${currentTaskId}`) + '?t=' + Date.now();
-                    console.log('[Stream] Fetching', streamUrl);
-                    fetch(streamUrl, { method: 'HEAD' }).then(r => {
-                        console.log('[Stream] HEAD status:', r.status);
-                    }).catch(e => console.error('[Stream] HEAD error:', e));
-                    videoPreview.src = streamUrl;
-                    videoPreview.load();
-                } catch (e) {
-                    console.error('Stream start error:', e);
-                }
-
+                connectWebSocket(currentTaskId);
                 startStatusPolling();
-                startStreamPolling();
             } catch (err) {
                 showStatus(err.message, 'error');
                 logToFrontend('Error: ' + err.message);
@@ -1289,6 +1612,82 @@
                 runBtn.disabled = false;
             }
         });
+
+        function connectWebSocket(taskId) {
+            ws = new WebSocket(wsUrl(taskId));
+            ws.binaryType = 'arraybuffer';
+
+            let metaJson = null;
+
+            ws.onmessage = (event) => {
+                if (typeof event.data === 'string') {
+                    const msg = JSON.parse(event.data);
+
+                    if (msg.type === 'frame_meta') {
+                        metaJson = msg;
+                    } else if (msg.type === 'status') {
+                        updateProgress(msg);
+                    } else if (msg.type === 'complete') {
+                        onInferenceComplete(msg);
+                    } else if (msg.type === 'error') {
+                        onInferenceError(msg.error);
+                    }
+                } else {
+                    if (metaJson && streamPlayer) {
+                        streamPlayer.onFrameReceived(
+                            new Uint8Array(event.data),
+                            metaJson.frame_idx,
+                            metaJson.detections,
+                            metaJson.timestamp
+                        );
+                        metaJson = null;
+                    }
+                }
+            };
+
+            ws.onerror = (err) => {
+                console.error('WebSocket error:', err);
+            };
+
+            ws.onclose = () => {
+                console.log('WebSocket closed');
+            };
+        }
+
+        function onInferenceComplete(data) {
+            if (!hasShownDownload) {
+                hasShownDownload = true;
+                showStatus('Inference completed', 'success');
+                logToFrontend('Inference completed');
+                progressBar.style.width = '100%';
+                progressPercentage.textContent = '100%';
+                setLoading(false);
+                runBtn.disabled = false;
+                fpsValue.textContent = '--';
+                etaValue.textContent = 'Done';
+
+                const fileSize = data.file_size || 0;
+                const isLargeFile = fileSize > fileSizeLimit;
+
+                downloadBtn.dataset.fileSize = fileSize;
+                downloadSection.classList.add('visible');
+
+                if (isLargeFile) {
+                    downloadHint.textContent = `Large file (${formatFileSize(fileSize)}) - Download from server`;
+                    downloadBtn.textContent = '↓ Download (Server)';
+                } else {
+                    downloadHint.textContent = 'Save your recording';
+                    downloadBtn.textContent = '↓ Save Recording';
+                }
+            }
+        }
+
+        function onInferenceError(error) {
+            showStatus(error || 'Inference failed', 'error');
+            logToFrontend('Failed: ' + (error || 'Inference failed'));
+            setLoading(false);
+            runBtn.disabled = false;
+        }
 
         async function pollStatus() {
             if (!currentTaskId) return;
@@ -1326,19 +1725,6 @@
             }, 1000);
         }
 
-        function startStreamPolling() {
-            if (streamPollInterval) clearInterval(streamPollInterval);
-            streamPollInterval = setInterval(() => {
-                if (!currentTaskId) return;
-                const videoPreview = document.getElementById('outputPreview');
-                if (!videoPreview) return;
-                const streamUrl = apiUrl(`/api/stream/${currentTaskId}`) + '?t=' + Date.now();
-                console.log('[StreamPoll] Re-requesting', streamUrl);
-                videoPreview.src = streamUrl;
-                videoPreview.load();
-            }, 2000);
-        }
-
         function updateProgress(data) {
             const progress = Math.min(data.progress, 100);
             progressBar.style.width = progress + '%';
@@ -1365,14 +1751,9 @@
                     const secs = Math.floor(data.eta_seconds % 60);
                     etaValue.textContent = mins > 0 ? `${mins}m ${secs}s` : `${secs}s`;
                 }
-                if (!isImage) startStreamPolling();
             } else if (data.status === 'completed') {
                 if (!hasShownDownload) {
                     hasShownDownload = true;
-                    if (streamPollInterval) {
-                        clearInterval(streamPollInterval);
-                        streamPollInterval = null;
-                    }
                     showStatus('Inference completed', 'success');
                     logToFrontend('Inference completed');
                     progressBar.style.width = '100%';
@@ -1384,10 +1765,6 @@
                     showDownload();
                 }
             } else if (data.status === 'failed') {
-                if (streamPollInterval) {
-                    clearInterval(streamPollInterval);
-                    streamPollInterval = null;
-                }
                 showStatus(data.message || 'Inference failed', 'error');
                 logToFrontend('Failed: ' + (data.message || 'Inference failed'));
                 setLoading(false);
@@ -1413,8 +1790,8 @@
             downloadBtn.href = apiUrl(`/api/download/${currentTaskId}`);
             downloadBtn.download = selectedFile ? `inference_result_${selectedFile.name}` : 'result.mp4';
             downloadBtn.onclick = null;
-            downloadHint.textContent = selectedFile && selectedFile.type.startsWith('image/') 
-                ? 'Annotated image ready' 
+            downloadHint.textContent = selectedFile && selectedFile.type.startsWith('image/')
+                ? 'Annotated image ready'
                 : 'Annotated video ready';
             downloadSection.classList.add('visible');
         }
