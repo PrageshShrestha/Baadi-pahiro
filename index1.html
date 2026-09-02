@@ -146,6 +146,8 @@
             text-decoration: none;
             cursor: pointer;
             transition: background 0.18s ease, transform 0.15s ease;
+            border: none;
+            font-family: var(--font-display);
         }
         .wordmark-text:hover {
             background: var(--divider-soft);
@@ -1142,7 +1144,7 @@
 <body>
     <div class="wordmark">
         <div class="wordmark-inner">
-            <a href="/" class="wordmark-text" id="wordmarkLogo" data-i18n-attr="aria-label:navAriaHome" aria-label="Home">Khojauhub</a>
+            <button type="button" class="wordmark-text" id="wordmarkLogo" data-i18n-attr="aria-label:navAriaHome" aria-label="Home">Khojauhub</button>
             <div class="wordmark-controls">
                 <button id="langToggle" class="wm-btn wm-lang" type="button" data-i18n-attr="aria-label:navAriaLang">
                     <span class="wm-lang-en">EN</span>
@@ -1484,6 +1486,7 @@
         const CONFIG_URL = 'https://raw.githubusercontent.com/PrageshShrestha/hasslefree/main/hopev.json';
 
         async function loadConfig() {
+            console.log('[config] loading from', CONFIG_URL);
             try {
                 const res = await fetch(CONFIG_URL);
                 if (!res.ok) throw new Error('Failed to load config');
@@ -1502,9 +1505,11 @@
                     WS_BASE = API_BASE.replace(/^https:\/\//, 'wss://');
                 }
             } catch (e) {
+                console.warn('[config] load failed, falling back to current origin:', e);
                 API_BASE = window.location.origin;
                 WS_BASE = API_BASE.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://');
             }
+            console.log('[config] API_BASE=' + API_BASE + ', WS_BASE=' + WS_BASE);
         }
 
         function apiUrl(p) { return API_BASE + p; }
@@ -2321,8 +2326,14 @@ _onMeta() {
             const fileSize = parseInt(downloadBtn.dataset.fileSize || '0');
             const isLargeFile = fileSize > fileSizeLimit;
             if (isLargeFile) {
-                console.log('[download] large file, hitting server endpoint');
-                window.location.href = apiUrl(`/api/download/${currentTaskId}`);
+                console.log('[download] large file, fetching via XHR to avoid navigation');
+                const a = document.createElement('a');
+                a.href = apiUrl(`/api/download/${currentTaskId}`);
+                a.download = selectedFile ? `inference_result_${selectedFile.name}` : 'result.bin';
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
                 return;
             }
             if (!player || player.entries.length === 0) {
@@ -2515,8 +2526,11 @@ _onMeta() {
             }
         });
 
-        function connectWebSocket(taskId) {
+        function connectWebSocket(taskId, retries = 5, delay = 500) {
             ws = new WebSocket(wsUrl(taskId));
+            ws.onopen = () => {
+                console.log('[ws] connected');
+            };
             ws.onmessage = (event) => {
                 if (typeof event.data !== 'string') return;
                 let msg; try { msg = JSON.parse(event.data); } catch (e) { return; }
@@ -2545,8 +2559,15 @@ _onMeta() {
                     updateProgress(msg);
                 }
             };
-            ws.onerror = e => console.error('WebSocket error:', e);
-            ws.onclose = () => console.log('WebSocket closed');
+            ws.onerror = e => console.warn('[ws] error (retrying...)', e);
+            ws.onclose = () => {
+                if (retries > 0) {
+                    console.log(`[ws] closed, retrying in ${delay}ms... (${retries} left)`);
+                    setTimeout(() => connectWebSocket(taskId, retries - 1, delay), delay);
+                } else {
+                    console.log('[ws] closed, no retries left - relying on HTTP polling');
+                }
+            };
         }
 
         function onInferenceComplete(data) {
@@ -2586,9 +2607,14 @@ _onMeta() {
                     updateProgress(data);
                     if (data.status === 'completed' || data.status === 'failed') {
                         clearInterval(statusPollInterval); statusPollInterval = null;
+                        // Also close WebSocket if it's still open
+                        if (ws && ws.readyState === WebSocket.OPEN) {
+                            ws.close();
+                            console.log('[ws] closed after completion');
+                        }
                     }
                 } catch (e) {}
-            }, 1000);
+            }, 500);
         }
 
         function updateProgress(data) {
@@ -2635,9 +2661,8 @@ _onMeta() {
             });
         }
         if (wordmarkLogo) {
-            wordmarkLogo.addEventListener('click', (e) => {
-                e.preventDefault();
-                window.location.reload();
+            wordmarkLogo.addEventListener('click', () => {
+                try { window.location.reload(); } catch (e) { window.location.href = window.location.pathname + window.location.search; }
             });
         }
 
