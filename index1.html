@@ -1,0 +1,2647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Khojauhub</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230066cc'/%3E%3Cpath d='M11 9.5v13l11-6.5z' fill='white'/%3E%3C/svg%3E">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        (async () => {
+            try {
+                const mod = await import('https://cdn.jsdelivr.net/npm/mediabunny@1.55.5/dist/bundles/mediabunny.min.mjs');
+                window.Mediabunny = mod;
+                window.dispatchEvent(new Event('mediabunny-ready'));
+                console.log('[mediabunny] loaded, exports:', Object.keys(mod).length);
+            } catch (e) {
+                console.warn('[mediabunny] failed to load:', e);
+            }
+        })();
+    </script>
+    <style>
+        /* 
+         * HOPE-V — Apple-Inspired Design System
+         * Photography-first. Negative letter-spacing. Action Blue.
+         */
+
+        :root {
+            --primary: #0066cc;
+            --primary-focus: #0071e3;
+            --primary-on-dark: #2997ff;
+            --ink: #1d1d1f;
+            --body: #1d1d1f;
+            --body-on-dark: #ffffff;
+            --body-muted: #cccccc;
+            --ink-muted-80: #333333;
+            --ink-muted-48: #7a7a7a;
+            --divider-soft: #f0f0f0;
+            --hairline: #e0e0e0;
+            --canvas: #ffffff;
+            --canvas-parchment: #f5f5f7;
+            --surface-pearl: #fafafc;
+            --surface-tile-1: #272729;
+            --surface-tile-2: #2a2a2c;
+            --surface-tile-3: #252527;
+            --surface-black: #000000;
+            --surface-chip-translucent: #d2d2d7;
+            --on-primary: #ffffff;
+            --on-dark: #ffffff;
+
+            --font-display: 'Inter', 'Noto Sans Devanagari', system-ui, -apple-system, sans-serif;
+            --font-text: 'Inter', 'Noto Sans Devanagari', system-ui, -apple-system, sans-serif;
+            --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', monospace;
+
+            --radius-none: 0px;
+            --radius-xs: 5px;
+            --radius-sm: 8px;
+            --radius-md: 11px;
+            --radius-lg: 18px;
+            --radius-pill: 9999px;
+            --radius-full: 9999px;
+        }
+
+        html[data-theme="dark"] {
+            --primary: #2997ff;
+            --primary-focus: #4ea8ff;
+            --primary-on-dark: #2997ff;
+            --ink: #f5f5f7;
+            --body: #f5f5f7;
+            --body-muted: #999999;
+            --ink-muted-80: #c7c7cc;
+            --ink-muted-48: #8e8e93;
+            --divider-soft: #2c2c2e;
+            --hairline: #3a3a3c;
+            --canvas: #000000;
+            --canvas-parchment: #1c1c1e;
+            --surface-pearl: #1c1c1e;
+            --surface-tile-1: #1c1c1e;
+            --surface-tile-2: #2c2c2e;
+            --surface-tile-3: #1c1c1e;
+            --surface-black: #000000;
+            --surface-chip-translucent: #3a3a3c;
+            --on-primary: #000000;
+            --on-dark: #ffffff;
+        }
+
+        html { color-scheme: light; }
+        html[data-theme="dark"] { color-scheme: dark; }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        body {
+            font-family: var(--font-text);
+            background: var(--canvas);
+            color: var(--body);
+            font-size: 17px;
+            line-height: 1.47;
+            letter-spacing: -0.374px;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Wordmark / Top Navbar */
+        .wordmark {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            width: 100vw;
+            background: var(--canvas);
+            padding: 10px 16px;
+            border-bottom: 1px solid var(--divider-soft);
+            backdrop-filter: saturate(180%) blur(12px);
+            -webkit-backdrop-filter: saturate(180%) blur(12px);
+        }
+
+        .wordmark-inner {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .wordmark-text {
+            display: inline-block;
+            font-family: var(--font-display);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--ink);
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--canvas-parchment);
+            text-decoration: none;
+            cursor: pointer;
+            transition: background 0.18s ease, transform 0.15s ease;
+        }
+        .wordmark-text:hover {
+            background: var(--divider-soft);
+            transform: translateY(-1px);
+        }
+        .wordmark-text:active {
+            transform: scale(0.96);
+        }
+
+        .wordmark-controls {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 6px;
+        }
+
+        .wm-btn {
+            font-family: var(--font-text);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            color: var(--ink);
+            background: var(--canvas-parchment);
+            border: 1px solid var(--divider-soft);
+            border-radius: 999px;
+            padding: 5px 11px;
+            cursor: pointer;
+            transition: background 0.18s ease, color 0.18s ease, transform 0.15s ease;
+            min-width: 38px;
+            text-align: center;
+        }
+        .wm-btn:hover { background: var(--divider-soft); transform: translateY(-1px); }
+        .wm-btn:active { transform: scale(0.95); }
+
+        .wm-lang { display: inline-flex; align-items: center; gap: 4px; }
+        .wm-lang-en, .wm-lang-ne { line-height: 1; }
+        .wm-lang-sep { opacity: 0.4; padding: 0 1px; }
+        .wm-lang .wm-lang-active { color: var(--primary); }
+
+        .wm-theme .wm-theme-icon-dark { display: none; }
+        html[data-theme="dark"] .wm-theme .wm-theme-icon-light { display: none; }
+        html[data-theme="dark"] .wm-theme .wm-theme-icon-dark { display: inline; }
+
+        @media (max-width: 600px) {
+            .wordmark-controls { gap: 4px; }
+            .wm-btn { padding: 4px 8px; font-size: 11px; min-width: 32px; }
+        }
+
+        /* Hero */
+        .hero {
+            background: var(--canvas);
+            margin-top:10vh;
+            padding: 0 24px 80px;
+            text-align: center;
+        }
+
+        .hero-eyebrow {
+            font-family: var(--font-display);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 0.231px;
+            text-transform: uppercase;
+            color: var(--ink-muted-80);
+            margin-bottom: 16px;
+        }
+
+        .hero-title {
+            font-family: var(--font-display);
+            font-size: 56px;
+            font-weight: 600;
+            line-height: 1.07;
+            letter-spacing: -0.28px;
+            color: var(--ink);
+            margin-bottom: 16px;
+        }
+
+        .hero-subtitle {
+            font-family: var(--font-text);
+            font-size: 21px;
+            font-weight: 300;
+            line-height: 1.5;
+            letter-spacing: 0;
+            color: var(--ink-muted-80);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        /* Features */
+        .features {
+            background: var(--canvas-parchment);
+            padding: 80px 24px;
+        }
+
+        .features-grid {
+            max-width: 800px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 24px;
+        }
+
+        .feature-card {
+            text-align: center;
+            padding: 24px 16px;
+        }
+
+        .feature-icon {
+            font-size: 32px;
+            margin-bottom: 16px;
+        }
+
+        .feature-title {
+            font-family: var(--font-display);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1.17px;
+            text-transform: uppercase;
+            color: var(--ink);
+            margin-bottom: 8px;
+        }
+
+        .feature-desc {
+            font-family: var(--font-text);
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--ink-muted-80);
+            line-height: 1.5;
+        }
+
+        /* Upload Tile */
+        .tile-upload {
+            background: var(--surface-tile-1);
+            padding: 24px;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .tile-upload .tile-inner {
+            max-height: 80vh;
+            overflow-y: auto;
+            padding-right: 6px;
+        }
+
+        .tile-upload.hidden { display: none; }
+
+        @media (max-height: 720px) {
+            .tile-upload { padding: 16px; }
+            .tile-upload .tile-inner { max-height: 80vh; }
+        }
+
+        .tile-inner {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .tile-title {
+            font-family: var(--font-display);
+            font-size: 40px;
+            font-weight: 600;
+            line-height: 1.1;
+            letter-spacing: 0;
+            color: var(--on-dark);
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .upload-zone {
+            border: 2px dashed rgba(255,255,255,0.2);
+            background: var(--surface-tile-2);
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 32px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .upload-zone:hover {
+            border-color: var(--on-dark);
+            background: rgba(255,255,255,0.05);
+        }
+
+        .upload-zone.dragover {
+            border-color: var(--primary-on-dark);
+            background: rgba(41, 151, 255, 0.05);
+            transform: scale(1.01);
+        }
+
+        .upload-zone.has-file {
+            border-color: var(--primary-on-dark);
+            border-style: solid;
+            padding: 8px;
+            height: 30vh;
+            min-height: 180px;
+            max-height: 30vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .upload-zone.has-file .upload-icon,
+        .upload-zone.has-file .upload-title,
+        .upload-zone.has-file .upload-subtitle { display: none; }
+
+        .upload-preview {
+            display: none;
+            width: auto;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+            margin: 0 auto;
+            border-radius: var(--radius-sm);
+            background: #000;
+        }
+
+        .upload-preview.visible {
+            display: block;
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 20px;
+            opacity: 0.6;
+            color: var(--on-dark);
+            transition: transform 0.3s ease;
+        }
+
+        .upload-zone:hover .upload-icon {
+            transform: translateY(-4px);
+        }
+
+        .upload-title {
+            font-family: var(--font-display);
+            font-size: 21px;
+            font-weight: 600;
+            letter-spacing: 0.231px;
+            color: var(--on-dark);
+            margin-bottom: 8px;
+        }
+
+        .upload-subtitle {
+            font-family: var(--font-text);
+            font-size: 17px;
+            font-weight: 400;
+            color: var(--body-muted);
+        }
+
+        .file-info {
+            display: none;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255,255,255,0.08);
+            text-align: center;
+            pointer-events: none;
+            max-width: 80%;
+        }
+
+        .file-info.visible {
+            display: block;
+        }
+
+        .file-name {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+            margin-bottom: 4px;
+            word-break: break-all;
+        }
+
+        .file-meta {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: rgba(255,255,255,0.7);
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Model Cards */
+        .model-section {
+            margin-bottom: 32px;
+        }
+
+        .model-label {
+            font-family: var(--font-display);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.17px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 16px;
+            text-align: center;
+        }
+
+        .model-cards {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .model-card {
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .model-card:hover {
+            border-color: rgba(255,255,255,0.3);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .model-card.selected {
+            border-color: var(--primary-on-dark);
+            background: rgba(41, 151, 255, 0.08);
+        }
+
+        .model-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .model-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            background: rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .model-card.selected .model-icon {
+            background: var(--primary-on-dark);
+        }
+
+        .model-name {
+            font-family: var(--font-display);
+            font-size: 16px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: var(--on-dark);
+        }
+
+        .model-desc {
+            font-family: var(--font-text);
+            font-size: 14px;
+            color: var(--body-muted);
+            line-height: 1.5;
+        }
+
+        .model-badge {
+            display: inline-block;
+            margin-top: 12px;
+            padding: 4px 10px;
+            background: rgba(255,255,255,0.1);
+            border-radius: var(--radius-pill);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            color: var(--body-muted);
+        }
+
+        .model-card.selected .model-badge {
+            background: var(--primary-on-dark);
+            color: var(--on-dark);
+        }
+
+        /* Controls */
+        .controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 17px;
+            margin-bottom: 32px;
+        }
+
+        .control-group {
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 24px;
+        }
+
+        .control-label {
+            display: flex;
+            align-items: baseline;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .control-title {
+            font-family: var(--font-display);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1.17px;
+            text-transform: uppercase;
+            color: var(--on-dark);
+        }
+
+        .control-sublabel {
+            font-family: var(--font-text);
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--body-muted);
+        }
+
+        select {
+            width: 100%;
+            padding: 14px 0;
+            background: transparent;
+            border: none;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            color: var(--on-dark);
+            font-family: var(--font-text);
+            font-size: 17px;
+            cursor: pointer;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23cccccc' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0 center;
+            transition: border-color 0.2s;
+        }
+
+        select:hover, select:focus {
+            border-bottom-color: var(--on-dark);
+            outline: none;
+        }
+
+        select option {
+            background: var(--surface-tile-1);
+            color: var(--on-dark);
+        }
+
+        .range-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            -webkit-appearance: none;
+            height: 1px;
+            background: rgba(255,255,255,0.2);
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--on-dark);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            background: var(--on-dark);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .range-value {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--on-dark);
+            min-width: 48px;
+            text-align: right;
+            letter-spacing: 0.5px;
+        }
+
+        /* Buttons */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            border-radius: var(--radius-pill);
+            border: none;
+            font-family: var(--font-text);
+            font-size: 17px;
+            font-weight: 400;
+            line-height: 1;
+            letter-spacing: -0.374px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            height: 44px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn:active:not(:disabled) {
+            transform: scale(0.95);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--on-primary);
+            padding: 11px 22px;
+            width: 100%;
+            max-width: 320px;
+            box-shadow: 0 4px 20px rgba(0, 102, 204, 0.3);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-focus);
+            box-shadow: 0 6px 30px rgba(0, 102, 204, 0.4);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .run-section {
+            text-align: center;
+        }
+
+        .run-hint {
+            margin-top: 12px;
+            font-family: var(--font-text);
+            font-size: 13px;
+            color: var(--body-muted);
+            opacity: 0.7;
+        }
+
+        /* Results Tile */
+        .tile-results {
+            background: var(--canvas-parchment);
+            padding: 20px 24px;
+            display: none;
+        }
+
+        .tile-results.visible {
+            display: block;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            margin-bottom: 16px;
+        }
+
+        .progress-title {
+            font-family: var(--font-display);
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.17px;
+            text-transform: uppercase;
+            color: var(--ink-muted-80);
+        }
+
+        .progress-percentage {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+        }
+
+        .progress-bar-track {
+            height: 4px;
+            background: var(--divider-soft);
+            border-radius: var(--radius-xs);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--primary-focus));
+            width: 0%;
+            transition: width 0.3s ease;
+            border-radius: var(--radius-xs);
+            position: relative;
+        }
+
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 32px;
+            margin-top: 48px;
+            padding-top: 48px;
+            border-top: 1px solid var(--hairline);
+        }
+
+        .stat-card {
+            text-align: center;
+            padding: 16px;
+            background: var(--canvas);
+            border-radius: var(--radius-md);
+            border: 1px solid var(--divider-soft);
+            position: relative;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        }
+
+        .stat-value {
+            font-family: var(--font-mono);
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--ink);
+            letter-spacing: 0.5px;
+            line-height: 1;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-family: var(--font-display);
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1.17px;
+            text-transform: uppercase;
+            color: var(--ink-muted-80);
+        }
+
+        /* Status */
+        .status-message {
+            margin-top: 24px;
+            padding: 20px 24px;
+            text-align: center;
+            font-family: var(--font-text);
+            font-size: 19px;
+            font-weight: 500;
+            color: var(--body-muted);
+            display: none;
+            border-radius: var(--radius-md);
+            background: white;
+            border: 1px solid var(--divider-soft);
+            position: relative;
+        }
+
+        .status-message.visible {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .status-message.success {
+            color: #0071e3;
+            background: rgba(0, 102, 204, 0.05);
+            border-color: rgba(0, 102, 204, 0.2);
+        }
+
+        .status-message.error {
+            color: #ff3b30;
+            background: rgba(255, 59, 48, 0.05);
+            border-color: rgba(255, 59, 48, 0.2);
+        }
+
+        .status-message.info {
+            color: var(--primary);
+            background: rgba(0, 102, 204, 0.05);
+            border-color: rgba(0, 102, 204, 0.2);
+        }
+
+        /* Download */
+        .download-section {
+            margin-top: 48px;
+            display: none;
+            text-align: center;
+        }
+
+        .download-section.visible {
+            display: block;
+            animation: slideUp 0.5s ease;
+        }
+
+        .download-card {
+            display: inline-block;
+            padding: 24px 32px;
+            background: var(--canvas);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--divider-soft);
+            text-align: center;
+        }
+
+        .btn-download {
+            background: var(--primary);
+            color: var(--on-primary);
+            padding: 11px 22px;
+            border-radius: var(--radius-pill);
+            border: none;
+            font-family: var(--font-text);
+            font-size: 17px;
+            font-weight: 400;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 20px rgba(0, 102, 204, 0.3);
+            position: relative;
+        }
+
+        .btn-download.live-pulse {
+            background: var(--primary-focus);
+        }
+        .btn-download .live-dot {
+            background: white;
+        }
+        .btn-spinner {
+            display: inline-block;
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255,255,255,0.35);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+            margin-right: 4px;
+            vertical-align: -2px;
+        }
+
+        .btn-download:hover:not(:disabled):not(.live-pulse) {
+            background: var(--primary-focus);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 30px rgba(0, 102, 204, 0.4);
+        }
+
+        .btn-download:active {
+            transform: scale(0.95);
+        }
+
+        .download-hint {
+            margin-top: 12px;
+            font-family: var(--font-text);
+            font-size: 13px;
+            color: var(--ink-muted-80);
+            position: relative;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--canvas-parchment);
+            padding: 48px 24px;
+            text-align: center;
+            border-top: 1px solid var(--divider-soft);
+        }
+
+        .footer-wordmark {
+            font-family: var(--font-display);
+            font-size: 14px;
+            font-weight: 700;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            color: var(--ink);
+            margin-bottom: 8px;
+        }
+
+        .footer-copy {
+            font-family: var(--font-text);
+            font-size: 14px;
+            color: var(--ink-muted-48);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero-title {
+                font-size: 40px;
+                letter-spacing: 0;
+            }
+
+            .hero-subtitle {
+                font-size: 19px;
+            }
+
+            .features-grid {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+
+            .model-cards {
+                grid-template-columns: 1fr;
+            }
+
+            .controls {
+                grid-template-columns: 1fr;
+            }
+
+            .tile-title {
+                font-size: 32px;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 12px;
+            }
+
+            .stat-value {
+                font-size: 20px;
+            }
+
+            .stat-card {
+                padding: 12px 8px;
+            }
+        }
+
+        /* Loading spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .btn-loading .spinner {
+            margin-right: 8px;
+        }
+
+        /* Modern live text animations */
+        .live-dots::after {
+            content: '';
+            display: inline-block;
+            width: 1.4em;
+            text-align: left;
+            animation: live-dots 1.2s steps(4, end) infinite;
+        }
+        @keyframes live-dots {
+            0%   { content: ''; }
+            25%  { content: '.'; }
+            50%  { content: '..'; }
+            75%  { content: '...'; }
+            100% { content: ''; }
+        }
+
+        .live-pulse {
+            display: inline-block;
+            animation: live-pulse 1.6s ease-in-out infinite;
+        }
+        @keyframes live-pulse {
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0.45; }
+        }
+
+        .live-shimmer {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+        }
+        .live-shimmer::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(0, 102, 204, 0.12) 50%, transparent 100%);
+            transform: translateX(-100%);
+            animation: live-shimmer 1.8s ease-in-out infinite;
+            pointer-events: none;
+            z-index: -1;
+        }
+        @keyframes live-shimmer {
+            0%   { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .live-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--primary);
+            margin-right: 8px;
+            vertical-align: middle;
+            animation: live-dot 1.2s ease-in-out infinite;
+            box-shadow: 0 0 0 0 rgba(0, 102, 204, 0.5);
+        }
+        @keyframes live-dot {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(0, 102, 204, 0.5); transform: scale(1); }
+            50%      { box-shadow: 0 0 0 6px rgba(0, 102, 204, 0);   transform: scale(1.1); }
+        }
+
+        .status-message.live-info {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        /* Player Controls */
+        .player-controls input[type="range"] {
+            -webkit-appearance: none;
+            height: 4px;
+            background: var(--divider-soft);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .player-controls input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .player-controls input[type="range"]::-moz-range-thumb {
+            width: 12px;
+            height: 12px;
+            background: var(--primary);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .controls-row .btn-secondary:hover {
+            background: var(--canvas-parchment);
+        }
+
+        .controls-row .btn-secondary.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+    <div class="wordmark">
+        <div class="wordmark-inner">
+            <a href="/" class="wordmark-text" id="wordmarkLogo" data-i18n-attr="aria-label:navAriaHome" aria-label="Home">Khojauhub</a>
+            <div class="wordmark-controls">
+                <button id="langToggle" class="wm-btn wm-lang" type="button" data-i18n-attr="aria-label:navAriaLang">
+                    <span class="wm-lang-en">EN</span>
+                    <span class="wm-lang-sep">/</span>
+                    <span class="wm-lang-ne">ने</span>
+                </button>
+                <button id="themeToggle" class="wm-btn wm-theme" type="button" data-i18n-attr="aria-label:navAriaTheme">
+                    <span class="wm-theme-icon-light">☀</span>
+                    <span class="wm-theme-icon-dark">☾</span>
+                </button>
+            </div>
+        </div>
+    </div>
+      <section class="tile-upload">
+        <div class="tile-inner">
+
+            <div class="upload-zone" id="uploadZone">
+                <div class="upload-icon">▶</div>
+                <div class="upload-title" id="uploadTitle" data-i18n="uploadTitle">Drop your photo or video here</div>
+                <div class="upload-subtitle" id="uploadSubtitle" data-i18n="uploadSubtitle">or tap to choose a file</div>
+                <img class="upload-preview" id="uploadPreview" alt="Preview">
+                <div class="file-info" id="fileInfo">
+                    <div class="file-name" id="fileName"></div>
+                    <div class="file-meta" id="fileMeta"></div>
+                </div>
+                <input type="file" id="fileInput" accept="image/*,video/*">
+            </div>
+
+            <div class="model-section">
+                <div class="model-label">Detection Model</div>
+                <div class="model-cards">
+                    <div class="model-card selected" data-model="nanodet" id="modelNanodet">
+                        <div class="model-card-header">
+                            <div class="model-name">NanoDet-Plus</div>
+                        </div>
+                        <div class="model-desc">Fast and lightweight. Optimized for real-time inference on edge devices.</div>
+                        <div class="model-badge">FAST</div>
+                    </div>
+                    <div class="model-card" data-model="rfdetr" id="modelRfdetr">
+                        <div class="model-card-header">
+                            <div class="model-name">RF-DETR</div>
+                        </div>
+                        <div class="model-desc">High accuracy transformer-based detection. Best for complex scenes.</div>
+                        <div class="model-badge">ACCURATE</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <div class="control-group">
+                    <div class="control-label">
+                        <span class="control-title">Threshold</span>
+                        <span class="control-sublabel" id="thresholdPercent">30%</span>
+                    </div>
+                    <div class="range-wrapper">
+                        <input type="range" id="thresholdRange" min="0.1" max="0.9" step="0.05" value="0.30">
+                        <div class="range-value" id="thresholdValue">0.30</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="run-section">
+                <button class="btn btn-primary" id="runBtn" disabled data-i18n="runBtn">Run detection</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="tile-results" id="resultsTile">
+        <div class="tile-inner">
+
+            <div id="uploadProgressWrap" style="display: none; margin-top: 0px; text-align: left; background: var(--canvas-parchment); border-radius: var(--radius-md); padding: 16px;padding-top:0px; border: 1px solid var(--divider-soft);">
+                <div style="display: flex; justify-content: space-between; font-size: 13px; color: var(--ink-muted-80); margin-bottom: 8px; font-weight: 500;">
+                    <span id="uploadProgressLabel">Uploading…</span>
+                    <span id="uploadProgressEta" style="font-family: var(--font-mono); color: var(--primary);">ETA --</span>
+                </div>
+                <div style="height: 6px; background: rgba(0,0,0,0.08); border-radius: 3px; overflow: hidden;">
+                    <div id="uploadProgressBar" style="height: 100%; width: 0%; background: linear-gradient(90deg, var(--primary), var(--primary-focus)); transition: width 0.15s ease;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-muted-48); margin-top: 8px; font-family: var(--font-mono);">
+                    <span id="uploadProgressBytes">0 B / 0 B</span>
+                    <span id="uploadProgressSpeed">0 KB/s</span>
+                </div>
+            </div>
+
+            <div class="image-preview-section" id="imagePreviewSection" style="display: none; margin-top: 5px; text-align: center;">
+                <div id="imageStage" style="position: relative; display: inline-block; max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--divider-soft); overflow: hidden; background: #000;">
+                    <img id="imageResult" style="display: block; max-width: 100%; max-height: 70vh; object-fit: contain;" alt="Result">
+                    <canvas id="imageOverlay" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+                </div>
+                <div id="imageDetectionList" style="margin-top: 14px; font-size: 13px; color: var(--ink-muted-80);"></div>
+            </div>
+
+            <div class="preview-section" id="previewSection" style="display: none; margin-top: 5px; text-align: center;">
+                <div id="playerStage" style="position: relative; display: inline-block; max-width: 100%; border-radius: var(--radius-md); border: 1px solid var(--divider-soft); overflow: hidden; background: #000; cursor: pointer;">
+                    <video id="playerVideo" playsinline muted style="display: block; max-width: 100%; max-height: 70vh;"></video>
+                    <canvas id="overlayCanvas" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+                    <canvas id="compositeCanvas" style="display: none;"></canvas>
+                    <div id="playIndicator" style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0.6); width: 96px; height: 96px; border-radius: 50%; background: rgba(0,0,0,0.55); display: flex; align-items: center; justify-content: center; pointer-events: none; opacity: 0; transition: opacity 0.4s ease, transform 0.4s ease; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);">
+                        <span id="playIndicatorIcon" style="font-size: 44px; color: #fff; line-height: 1;">▶</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="player-controls" id="playerControls" style="display: none; margin-top: 24px;">
+                <div class="timeline-container" style="position: relative; padding: 10px 0 18px;">
+                    <div id="progressTrack" style="position: relative; height: 10px; background: rgba(0,0,0,0.08); border-radius: 5px; overflow: hidden;">
+                        <canvas id="inferenceProgressBar" style="position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none;"></canvas>
+                        <div id="playhead" style="position: absolute; top: 0; left: 0; width: 2px; height: 100%; background: var(--primary); pointer-events: none;"></div>
+                    </div>
+                    <input type="range" id="timelineSlider" min="0" max="100" value="0" step="0.05" style="position: absolute; left: 0; right: 0; top: 10px; width: 100%; height: 10px; margin: 0; -webkit-appearance: none; appearance: none; background: transparent; pointer-events: auto;">
+                    <div class="timeline-labels" style="display: flex; justify-content: space-between; font-size: 12px; color: var(--ink-muted-48); margin-top: 6px;">
+                        <span id="currentTime">0:00</span>
+                        <span id="bufferedProgress">Buffered: 0%</span>
+                        <span id="totalTime">--:--</span>
+                    </div>
+                    <div class="legend" style="display: flex; gap: 14px; margin-top: 8px; font-size: 11px; color: var(--ink-muted-48);">
+                        <span><span style="display:inline-block;width:10px;height:10px;background:#ff3b30;border-radius:2px;vertical-align:middle;margin-right:4px;"></span><span data-i18n="legend.analyzed">Detected</span></span>
+                        <span><span style="display:inline-block;width:10px;height:10px;background:rgba(255,59,48,0.35);border-radius:2px;vertical-align:middle;margin-right:4px;"></span><span data-i18n="legend.analyzedAhead">Detected (not yet watched)</span></span>
+                        <span><span style="display:inline-block;width:10px;height:10px;background:#9aa0a6;border-radius:2px;vertical-align:middle;margin-right:4px;"></span><span data-i18n="legend.processing">Working</span></span>
+                        <span><span style="display:inline-block;width:10px;height:10px;background:rgba(0,0,0,0.08);border:1px solid rgba(0,0,0,0.12);border-radius:2px;vertical-align:middle;margin-right:4px;"></span><span data-i18n="legend.pending">Upcoming</span></span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-message" id="statusMessage"></div>
+            <div class="download-section" id="downloadSection">
+                <div class="download-card">
+                    <a class="btn-download" id="downloadBtn" download data-i18n="downloadVideo">⬇  Save your video</a>
+                    <div class="download-hint" id="downloadHint" data-i18n="downloadHintReady">Your file is ready below</div>
+                </div>
+            </div>
+            <div id="frontendLog" style="display: none; margin-top: 24px; padding: 16px; background: #1a1a1a; border-radius: var(--radius-md); border: 1px solid var(--divider-soft); max-height: 220px; overflow-y: auto; font-family: var(--font-mono); font-size: 12px; line-height: 1.6; color: #e0e0e0;">
+                <div id="frontendLogContent" style="white-space: pre-wrap; word-break: break-all;"></div>
+            </div>
+
+            
+        </div>
+    </section>
+    <section class="hero">
+        <div class="footer-copy" data-i18n="uploadLarge">* Your files are used only for the scan and are kept to help build a disaster-response dataset.</div>
+        <h1 class="hero-title" data-i18n="tagline">Detect objects in your video</h1>
+    </section>
+
+    <section class="features">
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-title">Dual Models</div>
+                <div class="feature-desc">Choose between fast NanoDet or accurate RF-DETR for your needs</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-title">SAHI Slicing</div>
+                <div class="feature-desc">Slice-based inference for detecting objects at any scale</div>
+            </div>
+            <div class="feature-card">
+                <div class="feature-title">Real-time Stats</div>
+                <div class="feature-desc">Live FPS, frame count, and ETA during processing</div>
+            </div>
+        </div>
+    </section>
+
+  
+
+
+
+<script>
+        const STRINGS = {
+            en: {
+                tagline: 'Detect objects in your video',
+                navAriaLang: 'Switch language',
+                navAriaTheme: 'Toggle dark mode',
+                navAriaHome: 'Go to home',
+                uploadTitle: 'Drop your photo or video here',
+                uploadSubtitle: 'or tap to choose a file',
+                uploadHint: 'MP4, MOV, JPG or PNG · up to 500 MB',
+                changeFile: 'Change file',
+                changeFileHint: 'Tap here or drop a new file',
+                releaseToUpload: 'Release to upload',
+                errBadType: 'Please choose a photo or video file',
+                errConfig: 'Setup is loading. Please wait a moment, then try again.',
+                thresholdLabel: 'Confidence',
+                detectionsCount: 'Detections',
+                imageNoDetections: 'No objects found',
+                runBtn: 'Run detection',
+                legend: {
+                    analyzed: 'Detected',
+                    analyzedAhead: 'Detected (not yet watched)',
+                    processing: 'Working',
+                    pending: 'Upcoming',
+                },
+                uploading: 'Sending your file',
+                uploadingPct: 'Sending your file · {pct}%',
+                uploadingBytes: 'Sending your file · {bytes}',
+                infStarting: 'Looking through your video',
+                infProcessing: 'Looking through your video',
+                infCompleted: 'All done!',
+                infQueued: 'Getting ready',
+                errInf: 'Something went wrong. Please try again.',
+                errNoMeta: 'Please wait until the scan finishes',
+                downloadVideo: '⬇  Save your video',
+                downloadImage: '⬇  Save your photo',
+                downloadHintReady: 'Your file is ready below',
+                renderStart: 'Putting the boxes on your video',
+                renderStartHint: 'Drawing detection boxes onto every frame',
+                renderStep: 'Working on frame {n} of {total}',
+                convertStart: 'Getting your video ready to save',
+                convertStartHint: 'Finishing touches on your video ({size})',
+                convertProgress: 'Finishing your video · {pct}%',
+                mp4Failed: 'Could not save as MP4 ({err}). Saving as WebM instead.',
+                fullVideo: '⬇  Save your video',
+                fullVideoHint: 'Your video is ready · {size}',
+                renderFailed: 'Could not finish the video ({err}).',
+                downloadLarge: 'Your file is too big to preview. Tap below to download.',
+                uploadProgressLabel: 'Sending your file',
+                uploadLarge: 'Tap below to download the original file.',
+            },
+            ne: {
+                tagline: 'आफ्नो भिडियोमा वस्तुहरू पत्ता लगाउनुहोस्',
+                navAriaLang: 'भाषा बदल्नुहोस्',
+                navAriaTheme: 'अँध्यारो/उज्यालो मोड',
+                navAriaHome: 'गृहपृष्ठमा जानुहोस्',
+                uploadTitle: 'आफ्नो फोटो वा भिडियो यहाँ राख्नुहोस्',
+                uploadSubtitle: 'वा फाइल छनोट गर्न ठाउँमा थिच्नुहोस्',
+                uploadHint: 'MP4, MOV, JPG वा PNG · ५०० MB सम्म',
+                changeFile: 'फाइल बदल्नुहोस्',
+                changeFileHint: 'नयाँ फाइल राख्नुहोस् वा थिच्नुहोस्',
+                releaseToUpload: 'अपलोड गर्न छोड्नुहोस्',
+                errBadType: 'कृपया फोटो वा भिडियो फाइल रोज्नुहोस्',
+                errConfig: 'पेज लोड हुँदैछ। कृपया एकछिन पर्खनुहोस्, फेरि प्रयास गर्नुहोस्।',
+                thresholdLabel: 'विश्वास',
+                detectionsCount: 'पत्ता लागेको',
+                imageNoDetections: 'कुनै वस्तु फेला परेन',
+                runBtn: 'पत्ता लगाउन सुरु गर्नुहोस्',
+                legend: {
+                    analyzed: 'पत्ता लागेको',
+                    analyzedAhead: 'पत्ता लागेको (हेरिएको छैन)',
+                    processing: 'चालू',
+                    pending: 'आउँदै',
+                },
+                uploading: 'फाइल पठाउँदै',
+                uploadingPct: 'फाइल पठाउँदै · {pct}%',
+                uploadingBytes: 'फाइल पठाउँदै · {bytes}',
+                infStarting: 'भिडियो हेरिँदै',
+                infProcessing: 'भिडियो हेरिँदै',
+                infCompleted: 'सकियो!',
+                infQueued: 'तयारी हुँदै',
+                errInf: 'केही गडबड भयो। कृपया फेरि प्रयास गर्नुहोस्।',
+                errNoMeta: 'कृपया स्क्यान सकिएपछि मात्र प्रयास गर्नुहोस्',
+                downloadVideo: '⬇  भिडियो सुरक्षित गर्नुहोस्',
+                downloadImage: '⬇  फोटो सुरक्षित गर्नुहोस्',
+                downloadHintReady: 'तपाईंको फाइल तल तयार छ',
+                renderStart: 'भिडियोमा बक्सहरू राख्दै',
+                renderStartHint: 'हरेक फ्रेममा पत्ता लगाएको बक्स राखिँदै',
+                renderStep: 'फ्रेम {n} / {total} मा काम गर्दै',
+                convertStart: 'भिडियो सुरक्षित गर्न तयार पार्दै',
+                convertStartHint: 'भिडियोमा अन्तिम थप हुँदै ({size})',
+                convertProgress: 'भिडियो तयार पार्दै · {pct}%',
+                mp4Failed: 'MP4 को रूपमा सुरक्षित गर्न सकिएन ({err})। WebM को रूपमा सुरक्षित गरिँदै।',
+                fullVideo: '⬇  भिडियो सुरक्षित गर्नुहोस्',
+                fullVideoHint: 'तपाईंको भिडियो तयार छ · {size}',
+                renderFailed: 'भिडियो तयार गर्न सकिएन ({err})।',
+                downloadLarge: 'फाइल ठूलो भएकोले यहाँ हेर्न मिल्दैन। तल थिचेर डाउनलोड गर्नुहोस्।',
+                uploadProgressLabel: 'फाइल पठाउँदै',
+                uploadLarge: 'मूल फाइल डाउनलोड गर्न तल थिच्नुहोस्।',
+            },
+        };
+
+        function getLang() {
+            try { return localStorage.getItem('hopev.lang') || 'en'; } catch (e) { return 'en'; }
+        }
+        function setLang(lang) {
+            try { localStorage.setItem('hopev.lang', lang); } catch (e) {}
+            applyTranslations();
+            document.documentElement.setAttribute('data-lang', lang);
+            updateLangToggle();
+        }
+        function t(key, params) {
+            const lang = getLang();
+            const parts = key.split('.');
+            let val = STRINGS[lang];
+            for (const p of parts) {
+                if (val && typeof val === 'object' && p in val) val = val[p];
+                else { val = STRINGS.en; for (const pp of parts) { if (val && typeof val === 'object' && pp in val) val = val[pp]; else return key; } break; }
+            }
+            if (typeof val !== 'string') return key;
+            if (params) for (const k of Object.keys(params)) val = val.replaceAll('{' + k + '}', params[k]);
+            return val;
+        }
+
+        function getTheme() {
+            try {
+                const stored = localStorage.getItem('hopev.theme');
+                if (stored === 'light' || stored === 'dark') return stored;
+            } catch (e) {}
+            return window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        function setTheme(theme) {
+            try { localStorage.setItem('hopev.theme', theme); } catch (e) {}
+            document.documentElement.setAttribute('data-theme', theme);
+        }
+
+        function updateLangToggle() {
+            const lang = getLang();
+            const enEl = document.querySelector('#langToggle .wm-lang-en');
+            const neEl = document.querySelector('#langToggle .wm-lang-ne');
+            if (enEl) enEl.classList.toggle('wm-lang-active', lang === 'en');
+            if (neEl) neEl.classList.toggle('wm-lang-active', lang === 'ne');
+        }
+
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                el.textContent = t(key);
+            });
+            document.querySelectorAll('[data-i18n-attr]').forEach(el => {
+                const spec = el.getAttribute('data-i18n-attr');
+                spec.split(';').forEach(pair => {
+                    const [attr, key] = pair.split(':').map(s => s && s.trim());
+                    if (attr && key) el.setAttribute(attr, t(key));
+                });
+            });
+        }
+
+        setTheme(getTheme());
+        setLang(getLang());
+
+        let currentTaskId = null;
+        let selectedFile = null;
+        let selectedModel = 'nanodet';
+        let hasShownDownload = false;
+        let statusPollInterval = null;
+        let API_BASE = '';
+        let WS_BASE = '';
+        let configLoaded = false;
+        let ws = null;
+        let player = null;
+        let fileSizeLimit = 500 * 1024 * 1024;
+        let objectUrlForFile = null;
+
+        const CONFIG_URL = 'https://raw.githubusercontent.com/PrageshShrestha/hasslefree/main/hopev.json';
+
+        async function loadConfig() {
+            try {
+                const res = await fetch(CONFIG_URL);
+                if (!res.ok) throw new Error('Failed to load config');
+                const cfg = await res.json();
+                const base = (cfg.api_base_url || '').trim();
+                if (!base) throw new Error('Empty api_base_url');
+                const isLocal = window.location.hostname === 'localhost'
+                    || window.location.hostname.startsWith('10.')
+                    || window.location.hostname.startsWith('192.168.')
+                    || window.location.hostname.startsWith('127.');
+                if (isLocal) {
+                    API_BASE = window.location.origin;
+                    WS_BASE = API_BASE.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://');
+                } else {
+                    API_BASE = 'https://' + base.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+                    WS_BASE = API_BASE.replace(/^https:\/\//, 'wss://');
+                }
+            } catch (e) {
+                API_BASE = window.location.origin;
+                WS_BASE = API_BASE.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://');
+            }
+        }
+
+        function apiUrl(p) { return API_BASE + p; }
+        function wsUrl(t) { return WS_BASE + '/ws/' + t; }
+
+        function formatTime(secs) {
+            if (!isFinite(secs) || secs < 0) secs = 0;
+            const m = Math.floor(secs / 60);
+            const s = Math.floor(secs % 60);
+            return `${m}:${s.toString().padStart(2, '0')}`;
+        }
+
+class RealtimePlayer {
+            constructor() {
+                this.video = document.getElementById('playerVideo');
+                this.overlay = document.getElementById('overlayCanvas');
+                this.ctx = this.overlay.getContext('2d');
+                this.composite = document.getElementById('compositeCanvas');
+                this.compCtx = this.composite.getContext('2d');
+
+                this.progressBar = document.getElementById('inferenceProgressBar');
+                this.progressCtx = this.progressBar ? this.progressBar.getContext('2d') : null;
+                this.playhead = document.getElementById('playhead');
+                this.progressTrack = document.getElementById('progressTrack');
+
+                this.entries = [];
+                this.duration = 0;
+                this.fps = 25;
+                this.totalFrames = 0;
+                this.lastAnalyzedTimestamp = -1;
+                this.latestTimestamp = -1;
+                this.lastIdx = -1;
+                this.rafId = null;
+                this.dpr = window.devicePixelRatio || 1;
+
+                this.mediaRecorder = null;
+                this.recordedChunks = [];
+                this.recordedBlob = null;
+                this.recordedUrl = null;
+                this.isRecording = false;
+
+                this.video.addEventListener('timeupdate', () => { this._drawProgress(); this.updateTimeline(); });
+                this.video.addEventListener('loadedmetadata', () => this._onMeta());
+                this.video.addEventListener('play', () => {
+                    if (typeof showPlayIndicator === 'function') showPlayIndicator(false);
+                    this._start();
+                });
+                this.video.addEventListener('pause', () => {
+                    if (typeof showPlayIndicator === 'function') showPlayIndicator(true);
+                });
+                this.video.addEventListener('ended', () => {
+                    if (this.rafId) cancelAnimationFrame(this.rafId);
+                    this.rafId = null;
+                });
+                window.addEventListener('resize', () => this._resizeProgress());
+            }
+
+            attachFile(file) {
+                if (objectUrlForFile) URL.revokeObjectURL(objectUrlForFile);
+                objectUrlForFile = URL.createObjectURL(file);
+                this.video.src = objectUrlForFile;
+                this.video.muted = true;
+                this.entries = [];
+                this.lastIdx = -1;
+                this.duration = 0;
+                this.ctx.clearRect(0, 0, this.overlay.width, this.overlay.height);
+            }
+
+_onMeta() {
+                const w = this.video.videoWidth || 1280;
+                const h = this.video.videoHeight || 720;
+                this.overlay.width = w;
+                this.overlay.height = h;
+                this.composite.width = w;
+                this.composite.height = h;
+                this.duration = this.video.duration || 0;
+                document.getElementById('totalTime').textContent = formatTime(this.duration);
+                const slider = document.getElementById('timelineSlider');
+                slider.max = String(Math.max(0.001, this.duration));
+                slider.value = '0';
+                this._resizeProgress();
+                this._drawProgress();
+                this.updateTimeline();
+            }
+
+            _resizeProgress() {
+                if (!this.progressBar || !this.progressTrack) return;
+                const rect = this.progressTrack.getBoundingClientRect();
+                const dpr = window.devicePixelRatio || 1;
+                this.dpr = dpr;
+                this.progressBar.width = Math.max(1, Math.floor(rect.width * dpr));
+                this.progressBar.height = Math.max(1, Math.floor(rect.height * dpr));
+                this.progressBar.style.width = rect.width + 'px';
+                this.progressBar.style.height = rect.height + 'px';
+            }
+
+            _xForTime(t) {
+                if (!this.duration || !this.progressBar) return 0;
+                const w = this.progressBar.width;
+                return Math.max(0, Math.min(w, Math.floor((t / this.duration) * w)));
+            }
+
+            _drawProgress() {
+                if (!this.progressCtx) return;
+                if (this.progressBar.width === 0 || this.progressBar.height === 0) this._resizeProgress();
+                const ctx = this.progressCtx;
+                const w = this.progressBar.width;
+                const h = this.progressBar.height;
+                ctx.clearRect(0, 0, w, h);
+
+                if (!this.duration) return;
+
+                const perFrameSec = 1 / Math.max(1, this.fps);
+                const playheadT = Math.max(0, this.video.currentTime || 0);
+                const playheadX = this._xForTime(playheadT);
+                const analyzedT = Math.max(0, this.lastAnalyzedTimestamp);
+                const analyzedX = this._xForTime(analyzedT);
+
+                const watchedEnd = Math.min(analyzedT, playheadT);
+                const watchedEndX = this._xForTime(watchedEnd);
+
+                ctx.fillStyle = '#ff3b30';
+                if (watchedEndX > 0) ctx.fillRect(0, 0, watchedEndX, h);
+
+                if (analyzedX > playheadX) {
+                    ctx.fillStyle = 'rgba(255, 59, 48, 0.35)';
+                    ctx.fillRect(playheadX, 0, analyzedX - playheadX, h);
+                }
+
+                const inFlightT = Math.max(analyzedT, playheadT) + perFrameSec * 5;
+                const inFlightStartX = Math.max(playheadX, analyzedX);
+                const inFlightEndX = Math.min(w, this._xForTime(Math.min(inFlightT, this.duration)));
+                if (inFlightEndX > inFlightStartX) {
+                    ctx.fillStyle = '#9aa0a6';
+                    ctx.fillRect(inFlightStartX, 0, inFlightEndX - inFlightStartX, h);
+                }
+
+                const filledX = Math.max(analyzedX, inFlightEndX);
+                ctx.fillStyle = 'rgba(0,0,0,0.06)';
+                if (filledX < w) ctx.fillRect(filledX, 0, w - filledX, h);
+
+                if (this.playhead) {
+                    const trackW = this.progressTrack ? this.progressTrack.getBoundingClientRect().width : w;
+                    const px = (playheadX / Math.max(1, w)) * trackW;
+                    this.playhead.style.transform = `translateX(${px - 1}px)`;
+                    this.playhead.style.height = this.progressTrack.getBoundingClientRect().height + 'px';
+                }
+            }
+
+            addMeta(timestamp_s, frame_idx, detections) {
+                const entry = { timestamp_s, frame_idx, detections: detections || [] };
+                const i = this._lowerBound(entry.timestamp_s);
+                this.entries.splice(i, 0, entry);
+
+                if (timestamp_s > this.lastAnalyzedTimestamp) {
+                    this.lastAnalyzedTimestamp = timestamp_s;
+                }
+                if (timestamp_s > this.latestTimestamp || this.latestTimestamp < 0) {
+                    this.latestTimestamp = timestamp_s;
+                }
+                this._drawProgress();
+            }
+
+            _lowerBound(t) {
+                let lo = 0, hi = this.entries.length;
+                while (lo < hi) {
+                    const mid = (lo + hi) >>> 1;
+                    if (this.entries[mid].timestamp_s < t) lo = mid + 1;
+                    else hi = mid;
+                }
+                return lo;
+            }
+
+            _currentDets() {
+                const t = this.video.currentTime;
+                if (this.entries.length === 0) return [];
+                const i = this._lowerBound(t);
+                const a = this.entries[Math.max(0, i - 1)];
+                const b = this.entries[Math.min(this.entries.length - 1, i)];
+                if (!a) return b.detections;
+                if (!b || a === b) return a.detections;
+                if (b.timestamp_s === a.timestamp_s) return a.detections;
+                const alpha = (t - a.timestamp_s) / (b.timestamp_s - a.timestamp_s);
+                return (alpha < 0.5 ? a : b).detections;
+            }
+
+            _draw() {
+                const w = this.overlay.width, h = this.overlay.height;
+                this.ctx.clearRect(0, 0, w, h);
+                const dets = this._currentDets();
+                this._drawDetections(this.ctx, w, h, dets);
+                if (this.isRecording) {
+                    this.compCtx.drawImage(this.video, 0, 0, this.composite.width, this.composite.height);
+                    this.compCtx.drawImage(this.overlay, 0, 0, this.composite.width, this.composite.height);
+                }
+                this.rafId = requestAnimationFrame(() => this._draw());
+            }
+
+            _start() {
+                if (this.rafId) return;
+                this.rafId = requestAnimationFrame(() => this._draw());
+            }
+
+            play() {
+                this.video.play().catch(() => {});
+            }
+
+            pause() {
+                this.video.pause();
+            }
+
+            seekTo(seconds) {
+                this.video.currentTime = Math.max(0, Math.min(this.duration || 0, seconds));
+            }
+
+            updateTimeline() {
+                const slider = document.getElementById('timelineSlider');
+                if (!slider.dataset.userSeeking) slider.value = String(this.video.currentTime || 0);
+                document.getElementById('currentTime').textContent = formatTime(this.video.currentTime || 0);
+                const buf = document.getElementById('bufferedProgress');
+                if (buf) buf.textContent = `${t('detectionsCount')}: ${this.entries.length}`;
+                const det = document.getElementById('detectionCount');
+                if (det) {
+                    const total = this.entries.reduce((a, e) => a + e.detections.length, 0);
+                    det.textContent = `${t('detectionsCount')}: ${total}`;
+                }
+                const fc = document.getElementById('frameCount');
+                if (fc) fc.textContent = `${t('detectionsCount')}: ${this.entries.length}`;
+            }
+
+            startRecording() {
+                if (!this.composite.captureStream) return false;
+                const fps = Math.max(10, Math.min(60, Math.round(this.fps || 25)));
+                const stream = this.composite.captureStream(fps);
+                const mime = [
+                    'video/mp4;codecs=avc1.42E01E',
+                    'video/mp4;codecs=avc1',
+                    'video/mp4',
+                    'video/webm;codecs=vp9',
+                    'video/webm;codecs=vp8',
+                    'video/webm'
+                ].find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm';
+                console.log(`[recording] start: mime=${mime}, fps=${fps}, composite=${this.composite.width}x${this.composite.height}, video=${this.video.videoWidth}x${this.video.videoHeight}`);
+                this.mediaRecorder = new MediaRecorder(stream, { mimeType: mime });
+                this.recordedChunks = [];
+                this.mediaRecorder.ondataavailable = e => { if (e.data && e.data.size) this.recordedChunks.push(e.data); };
+                this.mediaRecorder.onerror = e => console.error('[recording] error', e);
+                this.mediaRecorder.onstart = () => console.log('[recording] onstart');
+                this.mediaRecorder.start(250);
+                this.isRecording = true;
+                this._start();
+                return true;
+            }
+
+            async stopRecording() {
+                if (!this.mediaRecorder) return null;
+                const mr = this.mediaRecorder;
+                const chunksBefore = this.recordedChunks.length;
+                const sizeBefore = this.recordedChunks.reduce((s, c) => s + c.size, 0);
+                console.log(`[recording] stop: ${chunksBefore} chunks, ${sizeBefore} bytes so far, mime=${mr.mimeType}`);
+                const blob = await new Promise(resolve => {
+                    mr.onstop = () => resolve(new Blob(this.recordedChunks, { type: mr.mimeType || 'video/webm' }));
+                    try { mr.requestData && mr.requestData(); } catch (e) {}
+                    try { mr.stop(); } catch (e) { resolve(null); }
+                });
+                console.log(`[recording] final blob: type=${blob?.type}, size=${blob?.size}, chunks=${this.recordedChunks.length}`);
+                this.isRecording = false;
+                this.mediaRecorder = null;
+                this.recordedBlob = blob;
+                if (blob && blob.size > 0) {
+                    if (this.recordedUrl) URL.revokeObjectURL(this.recordedUrl);
+                    this.recordedUrl = URL.createObjectURL(blob);
+                }
+                return blob;
+            }
+
+            async _remuxToMp4(blob, onProgress) {
+                if (!window.Mediabunny) {
+                    await new Promise((resolve) => {
+                        if (window.Mediabunny) return resolve();
+                        const t = setTimeout(resolve, 10000);
+                        window.addEventListener('mediabunny-ready', () => { clearTimeout(t); resolve(); }, { once: true });
+                    });
+                }
+                if (!window.Mediabunny) throw new Error('mediabunny not loaded (CDN blocked?)');
+                const M = window.Mediabunny;
+                const input = new M.Input({
+                    formats: M.ALL_FORMATS,
+                    source: new M.BlobSource(blob),
+                });
+                const output = new M.Output({
+                    format: new M.Mp4OutputFormat({ fastStart: 'in-memory' }),
+                    target: new M.BufferTarget(),
+                });
+                const conversion = await M.Conversion.init({ input, output });
+                if (onProgress) {
+                    conversion.onProgress = (p) => onProgress(p);
+                }
+                if (!conversion.isValid) {
+                    const reasons = (conversion.discardedTracks || [])
+                        .map(d => `${d.track?.codec || 'unknown'}: ${d.reason}`)
+                        .join('; ');
+                    throw new Error(`Cannot convert to MP4 (${reasons || 'no valid tracks'})`);
+                }
+                await conversion.execute();
+                const buf = output.target.buffer;
+                if (!buf || buf.byteLength < 1024) {
+                    throw new Error(`MP4 output too small (${buf ? buf.byteLength : 0} bytes); conversion likely produced empty file`);
+                }
+                return new Blob([buf], { type: 'video/mp4' });
+            }
+
+            async saveRecording(button, hintEl) {
+                if (!this.recordedBlob) return;
+                const baseName = `inference_${(currentTaskId || 'video').slice(0, 8)}`;
+                const isMp4 = (this.mediaRecorder && this.mediaRecorder.mimeType && this.mediaRecorder.mimeType.startsWith('video/mp4'))
+                    || (this.recordedBlob.type && this.recordedBlob.type.startsWith('video/mp4'));
+                let blob = this.recordedBlob;
+                let ext = 'webm';
+                if (isMp4) {
+                    ext = 'mp4';
+                } else if (button && hintEl) {
+                    const original = button.textContent;
+                    button.disabled = true;
+                    if (typeof setLiveText === 'function') {
+                        setLiveText(button, t('convertStart'), { live: true });
+                        setLiveText(hintEl, t('convertStartHint', { size: formatFileSize(this.recordedBlob.size) }), { live: true });
+                    } else {
+                        button.textContent = '⏳ Converting to MP4…';
+                        hintEl.textContent = 'Remuxing recording to MP4 — this may take a moment';
+                    }
+                    try {
+                        blob = await this._remuxToMp4(this.recordedBlob, (p) => {
+                            if (hintEl) {
+                                if (typeof setLiveText === 'function') {
+                                    setLiveText(hintEl, t('convertProgress', { pct: Math.round(p * 100) }), { live: true });
+                                } else {
+                                    hintEl.textContent = `Converting to MP4… ${Math.round(p * 100)}%`;
+                                }
+                            }
+                        });
+                        ext = 'mp4';
+                    } catch (err) {
+                        if (typeof setLiveText === 'function') {
+                            setLiveText(button, original, null);
+                        } else {
+                            button.textContent = original;
+                        }
+                        button.disabled = false;
+                        hintEl.textContent = t('mp4Failed', { err: err.message || String(err) });
+                        console.warn('mediabunny remux failed, falling back to webm:', err);
+                    }
+                }
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = `${baseName}.${ext}`;
+                document.body.appendChild(a); a.click(); a.remove();
+                setTimeout(() => URL.revokeObjectURL(a.href), 60_000);
+            }
+
+            _drawCompositeFrame(ctx, w, h, sourceVideo) {
+                ctx.clearRect(0, 0, w, h);
+                ctx.drawImage(sourceVideo, 0, 0, w, h);
+                this.overlay.width = w;
+                this.overlay.height = h;
+                const prevT = sourceVideo._captureTime;
+                const t = sourceVideo.currentTime;
+                const dets = this._currentDetsAt(t);
+                this.overlay.getContext('2d').clearRect(0, 0, w, h);
+                this._drawDetections(this.overlay.getContext('2d'), w, h, dets);
+            }
+
+            _currentDetsAt(t) {
+                if (this.entries.length === 0) return [];
+                const i = this._lowerBound(t);
+                const a = this.entries[Math.max(0, i - 1)];
+                const b = this.entries[Math.min(this.entries.length - 1, i)];
+                if (!a) return b ? b.detections : [];
+                if (!b || a === b) return a.detections;
+                if (b.timestamp_s === a.timestamp_s) return a.detections;
+                const alpha = (t - a.timestamp_s) / (b.timestamp_s - a.timestamp_s);
+                return (alpha < 0.5 ? a : b).detections;
+            }
+
+            _drawDetections(ctx, w, h, dets) {
+                for (const det of dets) {
+                    const [x1, y1, x2, y2] = det.bbox.map(Math.round);
+                    ctx.strokeStyle = '#00ff00';
+                    ctx.lineWidth = Math.max(2, Math.round(w / 600));
+                    ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+                    const label = `${det.class_name || 'object'} ${(det.score * 100).toFixed(0)}%`;
+                    ctx.font = `bold ${Math.max(12, Math.round(w / 60))}px Inter, sans-serif`;
+                    const tw = ctx.measureText(label).width;
+                    const ty = Math.max(0, y1 - Math.max(18, Math.round(h / 40)));
+                    ctx.fillStyle = '#00ff00';
+                    ctx.fillRect(x1, ty, tw + 8, Math.max(18, Math.round(h / 40)));
+                    ctx.fillStyle = '#000';
+                    ctx.fillText(label, x1 + 4, ty + Math.max(14, Math.round(h / 50)));
+                }
+            }
+
+            async exportAnnotatedVideo() {
+                if (!objectUrlForFile) return null;
+                if (this.entries.length === 0) return null;
+
+                const src = document.createElement('video');
+                src.src = objectUrlForFile;
+                src.muted = true;
+                src.playsInline = true;
+                src.preload = 'auto';
+                src.disablePictureInPicture = true;
+                try { src.disableRemotePlayback = true; } catch (e) {}
+                await new Promise((resolve, reject) => {
+                    src.onloadedmetadata = () => resolve();
+                    src.onerror = () => reject(new Error('Source video load failed'));
+                });
+
+                const fps = Math.max(10, Math.min(60, Math.round(this.fps || 25)));
+                const w = src.videoWidth || 1280;
+                const h = src.videoHeight || 720;
+                const totalDur = src.duration || 0;
+
+                const canvas = document.createElement('canvas');
+                canvas.width = w; canvas.height = h;
+                const cctx = canvas.getContext('2d');
+
+                const captureFps = Math.max(60, Math.min(120, fps * 4));
+                const stream = canvas.captureStream(captureFps);
+                const mime = [
+                    'video/mp4;codecs=avc1.42E01E',
+                    'video/mp4;codecs=avc1',
+                    'video/mp4',
+                    'video/webm;codecs=vp9',
+                    'video/webm;codecs=vp8',
+                    'video/webm'
+                ].find(m => MediaRecorder.isTypeSupported(m)) || 'video/webm';
+                const recorder = new MediaRecorder(stream, { mimeType: mime, videoBitsPerSecond: 8_000_000 });
+                const chunks = [];
+                recorder.ondataavailable = e => { if (e.data && e.data.size) chunks.push(e.data); };
+                const stopped = new Promise(resolve => {
+                    recorder.onstop = () => resolve(new Blob(chunks, { type: mime }));
+                });
+                recorder.start(100);
+
+                const step = 1 / fps;
+                const seekTo = (t) => new Promise(resolve => {
+                    const onSeeked = () => { src.removeEventListener('seeked', onSeeked); resolve(); };
+                    src.addEventListener('seeked', onSeeked);
+                    try { src.currentTime = Math.min(totalDur - 0.001, Math.max(0, t)); }
+                    catch (e) { src.removeEventListener('seeked', onSeeked); resolve(); }
+                });
+
+                const drawAt = (t) => {
+                    cctx.clearRect(0, 0, w, h);
+                    cctx.drawImage(src, 0, 0, w, h);
+                    const dets = this._currentDetsAt(t);
+                    this._drawDetections(cctx, w, h, dets);
+                };
+
+                src.pause();
+                await seekTo(0);
+                const totalSteps = Math.ceil(totalDur / step);
+                let stepIdx = 0;
+                const onStep = this._onExportStep;
+                for (let t = 0; t < totalDur; t += step) {
+                    await seekTo(t);
+                    drawAt(t);
+                    stepIdx++;
+                    if (onStep) onStep(stepIdx, totalSteps, t);
+                }
+                drawAt(totalDur);
+
+                try { recorder.requestData && recorder.requestData(); } catch (e) {}
+                recorder.stop();
+                const blob = await stopped;
+                return blob;
+            }
+
+            reset() {
+                if (this.rafId) cancelAnimationFrame(this.rafId);
+                this.rafId = null;
+                this.entries = [];
+                this.lastIdx = -1;
+                this.lastAnalyzedTimestamp = -1;
+                this.latestTimestamp = -1;
+                this.ctx.clearRect(0, 0, this.overlay.width, this.overlay.height);
+                if (this.progressCtx) this.progressCtx.clearRect(0, 0, this.progressBar.width, this.progressBar.height);
+                if (this.playhead) this.playhead.style.transform = 'translateX(-2px)';
+                if (this.mediaRecorder) {
+                    try { this.mediaRecorder.stop(); } catch (e) {}
+                    this.mediaRecorder = null;
+                }
+                this.recordedChunks = [];
+                this.recordedBlob = null;
+                if (this.recordedUrl) { URL.revokeObjectURL(this.recordedUrl); this.recordedUrl = null; }
+                try { this.video.pause(); this.video.removeAttribute('src'); this.video.load(); } catch (e) {}
+            }
+        }
+
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadTitle = document.getElementById('uploadTitle');
+        const uploadSubtitle = document.getElementById('uploadSubtitle');
+        const uploadPreview = document.getElementById('uploadPreview');
+        const fileInfo = document.getElementById('fileInfo');
+        const fileName = document.getElementById('fileName');
+        const fileMeta = document.getElementById('fileMeta');
+        const runBtn = document.getElementById('runBtn');
+        const modelNanodet = document.getElementById('modelNanodet');
+        const modelRfdetr = document.getElementById('modelRfdetr');
+        const thresholdRange = document.getElementById('thresholdRange');
+        const thresholdValue = document.getElementById('thresholdValue');
+        const thresholdPercent = document.getElementById('thresholdPercent');
+        const statusMessage = document.getElementById('statusMessage');
+        const downloadSection = document.getElementById('downloadSection');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const downloadHint = document.getElementById('downloadHint');
+        const resultsTile = document.getElementById('resultsTile');
+
+        modelNanodet.addEventListener('click', () => selectModel('nanodet'));
+        modelRfdetr.addEventListener('click', () => selectModel('rfdetr'));
+
+        function selectModel(model) {
+            selectedModel = model;
+            modelNanodet.classList.toggle('selected', model === 'nanodet');
+            modelRfdetr.classList.toggle('selected', model === 'rfdetr');
+        }
+
+        uploadZone.addEventListener('click', () => fileInput.click());
+        uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); uploadTitle.textContent = t('releaseToUpload'); });
+        uploadZone.addEventListener('dragleave', () => { uploadZone.classList.remove('dragover'); updateUploadText(); });
+        uploadZone.addEventListener('drop', e => {
+            e.preventDefault(); uploadZone.classList.remove('dragover');
+            if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+        });
+        fileInput.addEventListener('change', e => { if (e.target.files.length) handleFile(e.target.files[0]); });
+
+        thresholdRange.addEventListener('input', e => {
+            const v = parseFloat(e.target.value);
+            thresholdValue.textContent = v.toFixed(2);
+            thresholdPercent.textContent = Math.round(v * 100) + '%';
+        });
+
+        function updateUploadText() {
+            if (!selectedFile) {
+                uploadTitle.textContent = t('uploadTitle');
+                uploadSubtitle.textContent = t('uploadSubtitle');
+            } else {
+                uploadTitle.textContent = t('changeFile');
+                uploadSubtitle.textContent = t('changeFileHint');
+            }
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function handleFile(file) {
+            if (!file.type.startsWith('video/') && !file.type.startsWith('image/')) {
+                showStatus(t('errBadType'), 'error');
+                return;
+            }
+            selectedFile = file;
+            uploadZone.classList.add('has-file');
+            fileName.textContent = file.name;
+            fileMeta.textContent = `${formatFileSize(file.size)} • ${file.type}`;
+            fileInfo.classList.add('visible');
+            runBtn.disabled = false;
+            hideStatus();
+
+            const url = URL.createObjectURL(file);
+            if (file.type.startsWith('image/')) {
+                uploadPreview.onload = () => URL.revokeObjectURL(url);
+                uploadPreview.src = url;
+                uploadPreview.classList.add('visible');
+            } else {
+                uploadPreview.classList.add('visible');
+                extractFirstFrame(file).then(dataUrl => {
+                    if (dataUrl) uploadPreview.src = dataUrl;
+                }).catch(() => { uploadPreview.src = ''; });
+            }
+            updateUploadText();
+        }
+
+        function extractFirstFrame(file) {
+            return new Promise(resolve => {
+                const v = document.createElement('video');
+                v.preload = 'auto';
+                v.muted = true;
+                v.playsInline = true;
+                v.src = URL.createObjectURL(file);
+                const cleanup = () => { try { URL.revokeObjectURL(v.src); } catch (e) {} };
+                v.addEventListener('loadeddata', () => {
+                    try { v.currentTime = Math.min(0.1, (v.duration || 1) / 2); } catch (e) { cleanup(); resolve(null); }
+                }, { once: true });
+                v.addEventListener('seeked', () => {
+                    try {
+                        const c = document.createElement('canvas');
+                        const w = v.videoWidth || 320, h = v.videoHeight || 180;
+                        c.width = w; c.height = h;
+                        c.getContext('2d').drawImage(v, 0, 0, w, h);
+                        cleanup();
+                        resolve(c.toDataURL('image/jpeg', 0.8));
+                    } catch (e) { cleanup(); resolve(null); }
+                }, { once: true });
+                v.addEventListener('error', () => { cleanup(); resolve(null); }, { once: true });
+            });
+        }
+
+        function renderImagePreview(file) {
+            const img = document.getElementById('imageResult');
+            const overlay = document.getElementById('imageOverlay');
+            const list = document.getElementById('imageDetectionList');
+            if (!img || !overlay || !list) return;
+            if (objectUrlForFile) URL.revokeObjectURL(objectUrlForFile);
+            objectUrlForFile = URL.createObjectURL(file);
+            img.onload = () => {
+                overlay.width = img.naturalWidth;
+                overlay.height = img.naturalHeight;
+                overlay.getContext('2d').clearRect(0, 0, overlay.width, overlay.height);
+                list.textContent = '';
+            };
+            img.src = objectUrlForFile;
+        }
+
+        function renderImageDetections(detections) {
+            const img = document.getElementById('imageResult');
+            const overlay = document.getElementById('imageOverlay');
+            const list = document.getElementById('imageDetectionList');
+            if (!img || !overlay || !list) return;
+            const w = img.naturalWidth || overlay.width;
+            const h = img.naturalHeight || overlay.height;
+            overlay.width = w; overlay.height = h;
+            const ctx = overlay.getContext('2d');
+            ctx.clearRect(0, 0, w, h);
+            if (!detections || detections.length === 0) {
+                list.textContent = t('imageNoDetections') || 'No objects found';
+                return;
+            }
+            const counts = {};
+            for (const d of detections) {
+                const name = d.class_name || 'object';
+                counts[name] = (counts[name] || 0) + 1;
+                const [x1, y1, x2, y2] = d.bbox.map(Math.round);
+                ctx.strokeStyle = '#00ff00';
+                ctx.lineWidth = Math.max(2, Math.round(w / 600));
+                ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+                const label = `${name} ${(d.score * 100).toFixed(0)}%`;
+                ctx.font = `bold ${Math.max(12, Math.round(w / 60))}px Inter, sans-serif`;
+                const tw = ctx.measureText(label).width;
+                const ty = Math.max(0, y1 - Math.max(18, Math.round(h / 40)));
+                ctx.fillStyle = '#00ff00';
+                ctx.fillRect(x1, ty, tw + 8, Math.max(18, Math.round(h / 40)));
+                ctx.fillStyle = '#000';
+                ctx.fillText(label, x1 + 4, ty + Math.max(14, Math.round(h / 50)));
+            }
+            const summary = Object.entries(counts)
+                .sort((a, b) => b[1] - a[1])
+                .map(([name, n]) => `${name} × ${n}`)
+                .join(' · ');
+            list.textContent = `${t('detectionsCount')}: ${detections.length} — ${summary}`;
+        }
+
+        const liveTextRegistry = new WeakMap();
+        function applyLiveText(el, opts) {
+            if (!el) return;
+            const isLive = !!(opts && opts.live);
+            const shimmer = !!(opts && opts.shimmer);
+            el.classList.toggle('live-pulse', isLive);
+            el.classList.toggle('live-shimmer', shimmer);
+            const data = liveTextRegistry.get(el) || {};
+            if (data.dotsEl && data.dotsEl.parentNode) data.dotsEl.remove();
+            if (data.prefixEl && data.prefixEl.parentNode) data.prefixEl.remove();
+            let prefixEl = null;
+            let dotsEl = null;
+            if (isLive) {
+                prefixEl = document.createElement('span');
+                prefixEl.className = 'live-dot';
+                el.insertBefore(prefixEl, el.firstChild);
+                dotsEl = document.createElement('span');
+                dotsEl.className = 'live-dots';
+                el.appendChild(dotsEl);
+            }
+            data.prefixEl = prefixEl;
+            data.dotsEl = dotsEl;
+            liveTextRegistry.set(el, data);
+        }
+
+        function setLiveText(el, text, opts) {
+            if (!el) return;
+            el.textContent = text || '';
+            applyLiveText(el, opts);
+        }
+
+        function showStatus(message, type) {
+            statusMessage.textContent = '';
+            const isInfo = (type || '') === 'info';
+            if (isInfo) {
+                const dot = document.createElement('span');
+                dot.className = 'live-dot';
+                statusMessage.appendChild(dot);
+                const txt = document.createElement('span');
+                txt.className = 'live-dots-host';
+                txt.textContent = message;
+                statusMessage.appendChild(txt);
+                const dots = document.createElement('span');
+                dots.className = 'live-dots';
+                statusMessage.appendChild(dots);
+            } else {
+                statusMessage.textContent = message;
+            }
+            statusMessage.className = 'status-message visible ' + (type || '') + (isInfo ? ' live-info' : '');
+        }
+        function hideStatus() {
+            statusMessage.className = 'status-message';
+            statusMessage.textContent = '';
+        }
+
+        function setLoading(loading) {
+            if (loading) {
+                runBtn.classList.add('btn-loading'); runBtn.disabled = true;
+                const existing = runBtn.querySelector('.spinner');
+                if (!existing) {
+                    const s = document.createElement('span'); s.className = 'spinner';
+                    runBtn.prepend(s);
+                }
+                const textNode = Array.from(runBtn.childNodes).find(n => n.nodeType === Node.TEXT_NODE && n.textContent.trim());
+                if (textNode) {
+                    runBtn.dataset.originalText = textNode.textContent;
+                    textNode.remove();
+                }
+                if (runBtn.dataset.originalText) {
+                    const label = document.createElement('span');
+                    label.className = 'live-pulse';
+                    label.textContent = runBtn.dataset.originalText;
+                    runBtn.appendChild(label);
+                }
+            } else {
+                runBtn.classList.remove('btn-loading');
+                const s = runBtn.querySelector('.spinner'); if (s) s.remove();
+                const lbl = runBtn.querySelector('.live-pulse');
+                if (lbl && runBtn.dataset.originalText) {
+                    lbl.replaceWith(document.createTextNode(runBtn.dataset.originalText));
+                }
+                runBtn.disabled = false;
+            }
+        }
+
+        const playerStage = document.getElementById('playerStage');
+        const playIndicator = document.getElementById('playIndicator');
+        const playIndicatorIcon = document.getElementById('playIndicatorIcon');
+        let playIndicatorTimer = null;
+        function showPlayIndicator(paused) {
+            if (!playIndicator || !playIndicatorIcon) return;
+            playIndicatorIcon.textContent = paused ? '▶' : '⏸';
+            playIndicator.style.opacity = '1';
+            playIndicator.style.transform = 'translate(-50%, -50%) scale(1)';
+            if (playIndicatorTimer) clearTimeout(playIndicatorTimer);
+            playIndicatorTimer = setTimeout(() => {
+                playIndicator.style.opacity = '0';
+                playIndicator.style.transform = 'translate(-50%, -50%) scale(0.6)';
+            }, 500);
+        }
+        if (playerStage) {
+            playerStage.addEventListener('click', () => {
+                if (!player) return;
+                if (player.video.paused) {
+                    player.play();
+                } else {
+                    player.pause();
+                }
+            });
+        }
+        document.getElementById('timelineSlider').addEventListener('input', e => {
+            e.target.dataset.userSeeking = '1';
+            if (player) {
+                const cap = player.lastAnalyzedTimestamp > 0
+                    ? Math.min(player.lastAnalyzedTimestamp, player.duration || 0)
+                    : (player.duration || 0);
+                let v = parseFloat(e.target.value);
+                if (cap > 0 && v > cap) { v = cap; e.target.value = String(cap); }
+                player.seekTo(v);
+            }
+        });
+        document.getElementById('timelineSlider').addEventListener('change', e => {
+            e.target.dataset.userSeeking = '';
+        });
+
+        function setDownloadButton(btn, hintEl, text, hint, opts) {
+            const isLive = !!(opts && opts.live);
+            btn.classList.toggle('live-pulse', isLive);
+            const existing = btn.querySelector('.btn-spinner');
+            if (existing) existing.remove();
+            btn.textContent = '';
+            if (isLive) {
+                const s = document.createElement('span');
+                s.className = 'btn-spinner';
+                btn.appendChild(s);
+            }
+            const labelEl = document.createElement('span');
+            labelEl.textContent = text;
+            btn.appendChild(labelEl);
+            setLiveText(hintEl, hint, opts);
+        }
+
+        downloadBtn.addEventListener('click', async (e) => {
+            const isImage = selectedFile && !selectedFile.type.startsWith('video/');
+            if (isImage) return;
+            e.preventDefault();
+            console.log('[download] click fired');
+            if (!currentTaskId) return;
+            const fileSize = parseInt(downloadBtn.dataset.fileSize || '0');
+            const isLargeFile = fileSize > fileSizeLimit;
+            if (isLargeFile) {
+                console.log('[download] large file, hitting server endpoint');
+                window.location.href = apiUrl(`/api/download/${currentTaskId}`);
+                return;
+            }
+            if (!player || player.entries.length === 0) {
+                showStatus(t('errNoMeta'), 'error');
+                return;
+            }
+            if (player.exportInProgress) {
+                console.log('[download] already in progress, ignoring');
+                return;
+            }
+            player.exportInProgress = true;
+            downloadBtn.disabled = true;
+            const originalText = downloadBtn.textContent;
+            const originalHint = downloadHint.textContent;
+            setDownloadButton(downloadBtn, downloadHint, t('renderStart'), t('renderStartHint'), { live: true, shimmer: true });
+            showStatus(t('renderStart'), 'info');
+            try {
+                console.log('[download] starting render, isRecording=' + player.isRecording + ', entries=' + player.entries.length + ', duration=' + player.duration);
+                if (player.isRecording) {
+                    try { await player.stopRecording(); } catch (e) { console.warn('stopRecording error', e); }
+                }
+                player._onExportStep = (stepIdx, totalSteps, ts) => {
+                    setLiveText(downloadHint, t('renderStep', { n: stepIdx, total: totalSteps }), { live: true, shimmer: true });
+                };
+                const blob = await player.exportAnnotatedVideo();
+                console.log('[download] export done, blob size=' + (blob ? blob.size : 'null') + ', type=' + (blob ? blob.type : 'null'));
+                if (blob && blob.size > 0) {
+                    player.recordedBlob = blob;
+                    if (player.recordedUrl) URL.revokeObjectURL(player.recordedUrl);
+                    setDownloadButton(downloadBtn, downloadHint, t('convertStart'), t('convertStartHint', { size: formatFileSize(blob.size) }), { live: true });
+                    await player.saveRecording(downloadBtn, downloadHint);
+                    console.log('[download] saveRecording done, saved size=' + player.recordedBlob.size);
+                    setDownloadButton(downloadBtn, downloadHint, t('fullVideo'), t('fullVideoHint', { size: formatFileSize(player.recordedBlob.size) }), null);
+                } else {
+                    console.warn('[download] export returned empty blob');
+                    setDownloadButton(downloadBtn, downloadHint, originalText, t('renderFailed', { err: 'empty output' }), null);
+                }
+            } catch (err) {
+                console.error('[download] error', err);
+                setDownloadButton(downloadBtn, downloadHint, originalText, t('renderFailed', { err: err.message || String(err) }), null);
+            } finally {
+                player.exportInProgress = false;
+                downloadBtn.disabled = false;
+            }
+        });
+
+        function xhrUpload(url, formData, onProgress) {
+            return new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.open('POST', url, true);
+                xhr.setRequestHeader('skip_zrok_interstitial', 'true');
+                let lastLoaded = 0, lastT = performance.now(), emaRate = 0;
+                xhr.upload.addEventListener('progress', (e) => {
+                    if (!e.lengthComputable) {
+                        onProgress({ loaded: e.loaded, total: 0, pct: 0, rate: emaRate });
+                        return;
+                    }
+                    const now = performance.now();
+                    const dT = Math.max(1, now - lastT);
+                    const dB = Math.max(0, e.loaded - lastLoaded);
+                    const instRate = (dB / dT) * 1000;
+                    emaRate = emaRate ? (emaRate * 0.7 + instRate * 0.3) : instRate;
+                    lastLoaded = e.loaded; lastT = now;
+                    onProgress({
+                        loaded: e.loaded, total: e.total,
+                        pct: (e.loaded / e.total) * 100,
+                        rate: emaRate,
+                    });
+                });
+                xhr.addEventListener('load', () => {
+                    if (xhr.status >= 200 && xhr.status < 300) {
+                        try { resolve(JSON.parse(xhr.responseText)); }
+                        catch (err) { reject(new Error('Invalid JSON response')); }
+                    } else {
+                        reject(new Error(`Upload failed (${xhr.status})`));
+                    }
+                });
+                xhr.addEventListener('error', () => reject(new Error('Network error')));
+                xhr.addEventListener('abort', () => reject(new Error('Upload aborted')));
+                xhr.send(formData);
+            });
+        }
+
+        const uploadProgressLabelEl = document.getElementById('uploadProgressLabel');
+        function setUploadProgress({ loaded, total, pct, rate }) {
+            const wrap = document.getElementById('uploadProgressWrap');
+            const bar = document.getElementById('uploadProgressBar');
+            const label = document.getElementById('uploadProgressLabel');
+            const etaEl = document.getElementById('uploadProgressEta');
+            const bytesEl = document.getElementById('uploadProgressBytes');
+            const speedEl = document.getElementById('uploadProgressSpeed');
+            if (!wrap) return;
+            wrap.style.display = 'block';
+            const p = Math.max(0, Math.min(100, pct || 0));
+            bar.style.width = p.toFixed(1) + '%';
+            setLiveText(label, total > 0 ? t('uploadingPct', { pct: p.toFixed(0) }) : t('uploadingBytes', { bytes: formatFileSize(loaded) }), { live: true });
+            bytesEl.textContent = total > 0 ? `${formatFileSize(loaded)} / ${formatFileSize(total)}` : `${formatFileSize(loaded)}`;
+            speedEl.textContent = rate > 0 ? `${formatFileSize(rate)}/s` : '--';
+            if (total > 0 && rate > 0) {
+                const remain = (total - loaded) / rate;
+                etaEl.textContent = `ETA ${formatTime(remain)}`;
+            } else {
+                etaEl.textContent = 'ETA --';
+            }
+        }
+
+        function resetUploadProgress() {
+            const wrap = document.getElementById('uploadProgressWrap');
+            if (wrap) wrap.style.display = 'none';
+        }
+
+        runBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+            if (!API_BASE) { showStatus(t('errConfig'), 'error'); return; }
+
+            const isVideo = selectedFile.type.startsWith('video/');
+            const isImage = selectedFile.type.startsWith('image/');
+
+            const uploadTile = document.querySelector('.tile-upload');
+            setLoading(true);
+            if (uploadTile) uploadTile.classList.add('hidden');
+            resultsTile.classList.add('visible');
+            document.getElementById('uploadProgressWrap').style.display = 'block';
+            downloadSection.classList.remove('visible');
+            const previewSection = document.getElementById('previewSection');
+            const playerControls = document.getElementById('playerControls');
+            const imagePreviewSection = document.getElementById('imagePreviewSection');
+            previewSection.style.display = isVideo ? 'block' : 'none';
+            playerControls.style.display = isVideo ? 'block' : 'none';
+            if (imagePreviewSection) imagePreviewSection.style.display = isImage ? 'block' : 'none';
+            hasShownDownload = false;
+
+            if (statusPollInterval) { clearInterval(statusPollInterval); statusPollInterval = null; }
+            if (ws) { try { ws.close(); } catch (e) {} ws = null; }
+            if (player) { player.reset(); player = null; }
+            if (isVideo) {
+                player = new RealtimePlayer();
+                player.attachFile(selectedFile);
+            } else if (isImage) {
+                renderImagePreview(selectedFile);
+                const v = document.getElementById('playerVideo');
+                if (v) { try { v.pause(); v.removeAttribute('src'); v.load(); } catch (e) {} }
+            }
+
+            const logEl = document.getElementById('frontendLog');
+            const contentEl = document.getElementById('frontendLogContent');
+            if (logEl && contentEl) { contentEl.textContent = ''; logEl.style.display = 'none'; }
+            showStatus(t('infStarting'), 'info');
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const uploadData = await xhrUpload(apiUrl('/api/upload'), formData, setUploadProgress);
+                currentTaskId = uploadData.task_id;
+                resetUploadProgress();
+
+                resultsTile.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                if (player && selectedFile.type.startsWith('video/')) {
+                    player.play();
+                    player.startRecording();
+                }
+
+                logToFrontend('Upload complete');
+                showStatus(t('infProcessing'), 'info');
+
+                const inferRes = await fetch(apiUrl(`/api/infer/${currentTaskId}`), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'skip_zrok_interstitial': 'true' },
+                    body: JSON.stringify({
+                        model_type: selectedModel,
+                        score_threshold: parseFloat(thresholdRange.value),
+                        iou_threshold: 0.45,
+                        slice_size: 416,
+                        overlap: 0.0,
+                    }),
+                });
+                if (!inferRes.ok) { const err = await inferRes.json(); throw new Error(err.detail || 'Inference failed to start'); }
+                const inferData = await inferRes.json();
+                updateProgress(inferData);
+                logToFrontend('Inference started: ' + inferData.status);
+
+                connectWebSocket(currentTaskId);
+                startStatusPolling();
+            } catch (err) {
+                showStatus(err.message, 'error');
+                logToFrontend('Error: ' + err.message);
+                setLoading(false); runBtn.disabled = false;
+            }
+        });
+
+        function connectWebSocket(taskId) {
+            ws = new WebSocket(wsUrl(taskId));
+            ws.onmessage = (event) => {
+                if (typeof event.data !== 'string') return;
+                let msg; try { msg = JSON.parse(event.data); } catch (e) { return; }
+                if (msg.type === 'frame_meta') {
+                    if (player) {
+                        player.addMeta(msg.timestamp_s, msg.frame_idx, msg.detections || []);
+                    } else if (selectedFile && selectedFile.type.startsWith('image/')) {
+                        renderImageDetections(msg.detections || []);
+                    }
+                } else if (msg.type === 'video_meta') {
+                    if (player) {
+                        player.fps = msg.fps || 25;
+                        if (msg.total_frames) player.totalFrames = msg.total_frames;
+                        if (!player.duration && msg.duration_s) {
+                            player.duration = msg.duration_s;
+                            document.getElementById('totalTime').textContent = formatTime(msg.duration_s);
+                        }
+                        player._resizeProgress();
+                        player._drawProgress();
+                    }
+                } else if (msg.type === 'complete') {
+                    onInferenceComplete(msg);
+                } else if (msg.type === 'error') {
+                    onInferenceError(msg.error);
+                } else if (msg.type === 'status') {
+                    updateProgress(msg);
+                }
+            };
+            ws.onerror = e => console.error('WebSocket error:', e);
+            ws.onclose = () => console.log('WebSocket closed');
+        }
+
+        function onInferenceComplete(data) {
+            if (hasShownDownload) return;
+            hasShownDownload = true;
+            showStatus(t('infCompleted'), 'success');
+            logToFrontend('Inference completed');
+            setLoading(false); runBtn.disabled = false;
+
+            downloadBtn.dataset.fileSize = data.file_size || 0;
+            downloadSection.classList.add('visible');
+
+            if (selectedFile && !selectedFile.type.startsWith('video/')) {
+                downloadBtn.href = apiUrl(`/api/download/${currentTaskId}`);
+                downloadBtn.download = `inference_result_${selectedFile.name}`;
+                setLiveText(downloadBtn, t('downloadImage'), null);
+                downloadHint.textContent = t('downloadHintReady');
+            } else {
+                setLiveText(downloadBtn, t('downloadVideo'), null);
+                downloadHint.textContent = t('downloadHintReady');
+            }
+        }
+
+        function onInferenceError(error) {
+            showStatus(error || t('errInf'), 'error');
+            logToFrontend('Failed: ' + (error || 'Inference failed'));
+            setLoading(false); runBtn.disabled = false;
+        }
+
+        function startStatusPolling() {
+            if (statusPollInterval) clearInterval(statusPollInterval);
+            statusPollInterval = setInterval(async () => {
+                if (!currentTaskId) return;
+                try {
+                    const res = await fetch(apiUrl(`/api/status/${currentTaskId}`), { headers: { 'skip_zrok_interstitial': 'true' } });
+                    const data = await res.json();
+                    updateProgress(data);
+                    if (data.status === 'completed' || data.status === 'failed') {
+                        clearInterval(statusPollInterval); statusPollInterval = null;
+                    }
+                } catch (e) {}
+            }, 1000);
+        }
+
+        function updateProgress(data) {
+            if (data.status === 'processing') {
+                showStatus(t('infProcessing'), 'info');
+            } else if (data.status === 'completed') {
+                if (!hasShownDownload) {
+                    hasShownDownload = true;
+                    showStatus(t('infCompleted'), 'success');
+                    setLoading(false); runBtn.disabled = false;
+                    downloadBtn.removeAttribute('href');
+                    downloadHint.textContent = selectedFile && selectedFile.type.startsWith('image/') ? t('downloadHintReady') : t('downloadHintReady');
+                    downloadSection.classList.add('visible');
+                }
+            } else if (data.status === 'failed') {
+                showStatus(data.message || t('errInf'), 'error');
+                setLoading(false); runBtn.disabled = false;
+            } else if (data.status === 'queued') {
+                showStatus(t('infQueued'), 'info');
+            }
+        }
+
+        function logToFrontend(msg) {
+            const logEl = document.getElementById('frontendLog');
+            const contentEl = document.getElementById('frontendLogContent');
+            if (!logEl || !contentEl) return;
+            const t = new Date().toLocaleTimeString();
+            contentEl.textContent += `[${t}] ${msg}\n`;
+            logEl.scrollTop = logEl.scrollHeight;
+            logEl.style.display = 'block';
+        }
+
+        const langToggle = document.getElementById('langToggle');
+        const themeToggle = document.getElementById('themeToggle');
+        const wordmarkLogo = document.getElementById('wordmarkLogo');
+        if (langToggle) {
+            langToggle.addEventListener('click', () => {
+                setLang(getLang() === 'en' ? 'ne' : 'en');
+            });
+        }
+        if (themeToggle) {
+            themeToggle.addEventListener('click', () => {
+                setTheme(getTheme() === 'dark' ? 'light' : 'dark');
+            });
+        }
+        if (wordmarkLogo) {
+            wordmarkLogo.addEventListener('click', (e) => {
+                e.preventDefault();
+                window.location.reload();
+            });
+        }
+
+        loadConfig();
+    </script>
+</body>
+</html>
