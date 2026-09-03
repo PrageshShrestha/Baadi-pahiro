@@ -2384,7 +2384,6 @@ _onMeta() {
             return new Promise((resolve, reject) => {
                 const xhr = new XMLHttpRequest();
                 xhr.open('POST', url, true);
-                xhr.setRequestHeader('skip_zrok_interstitial', 'true');
                 let lastLoaded = 0, lastT = performance.now(), emaRate = 0;
                 xhr.upload.addEventListener('progress', (e) => {
                     if (!e.lengthComputable) {
@@ -2503,7 +2502,7 @@ _onMeta() {
 
                 const inferRes = await fetch(apiUrl(`/api/infer/${currentTaskId}`), {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'skip_zrok_interstitial': 'true' },
+                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         model_type: selectedModel,
                         score_threshold: parseFloat(thresholdRange.value),
@@ -2602,7 +2601,7 @@ _onMeta() {
             statusPollInterval = setInterval(async () => {
                 if (!currentTaskId) return;
                 try {
-                    const res = await fetch(apiUrl(`/api/status/${currentTaskId}`), { headers: { 'skip_zrok_interstitial': 'true' } });
+                    const res = await fetch(apiUrl(`/api/status/${currentTaskId}`));
                     const data = await res.json();
                     updateProgress(data);
                     if (data.status === 'completed' || data.status === 'failed') {
