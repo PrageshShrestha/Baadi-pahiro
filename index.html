@@ -2167,13 +2167,11 @@ class RealtimePlayer {
                 const data = await res.json();
                 if (data.thumbnail_url) {
                     uploadPreview.onload = () => {};
-                    uploadPreview.src = data.thumbnail_url;
+                    uploadPreview.src = apiUrl(`/api/thumbnail-image?url=${encodeURIComponent(data.thumbnail_url)}`);
                     uploadPreview.classList.add('visible');
                     uploadZone.classList.add('has-file');
                     uploadTitle.textContent = t('urlReady');
                     uploadSubtitle.textContent = url;
-                    // Auto-start inference after preview loads
-                    handleUrlSubmit();
                 }
             } catch (e) {
                 // Silently fail - preview is optional
