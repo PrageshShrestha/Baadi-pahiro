@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1538,6 +1537,20 @@
             WS_BASE = API_BASE.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://');
             console.log('[config] API_BASE=' + API_BASE + ', WS_BASE=' + WS_BASE);
         })();
+
+        async function healthCheck() {
+            try {
+                const res = await fetch(apiUrl('/api/health'));
+                const data = await res.json();
+                console.log('[health] OK', data);
+                return data;
+            } catch (e) {
+                console.error('[health] FAILED', e);
+                return null;
+            }
+        }
+
+        healthCheck();
 
         function apiUrl(p) { return API_BASE + p; }
         function wsUrl(t) { return WS_BASE + '/ws/' + t; }
