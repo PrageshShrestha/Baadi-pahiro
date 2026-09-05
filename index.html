@@ -1532,34 +1532,11 @@
         let fileSizeLimit = 500 * 1024 * 1024;
         let objectUrlForFile = null;
 
-        const CONFIG_URL = 'https://raw.githubusercontent.com/PrageshShrestha/hasslefree/main/hopev.json';
-
-        async function loadConfig() {
-            console.log('[config] loading from', CONFIG_URL);
-            try {
-                const res = await fetch(CONFIG_URL);
-                if (!res.ok) throw new Error('Failed to load config');
-                const cfg = await res.json();
-                const base = (cfg.api_base_url || '').trim();
-                if (!base) throw new Error('Empty api_base_url');
-                const isLocal = window.location.hostname === 'localhost'
-                    || window.location.hostname.startsWith('10.')
-                    || window.location.hostname.startsWith('192.168.')
-                    || window.location.hostname.startsWith('127.');
-                if (isLocal) {
-                    API_BASE = window.location.origin;
-                    WS_BASE = API_BASE.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://');
-                } else {
-                    API_BASE = 'https://' + base.replace(/^https?:\/\//, '').replace(/\/+$/, '');
-                    WS_BASE = API_BASE.replace(/^https:\/\//, 'wss://');
-                }
-            } catch (e) {
-                console.warn('[config] load failed, falling back to current origin:', e);
-                API_BASE = window.location.origin;
-                WS_BASE = API_BASE.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://');
-            }
+        (function initApiBase() {
+            API_BASE = window.location.origin;
+            WS_BASE = API_BASE.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://');
             console.log('[config] API_BASE=' + API_BASE + ', WS_BASE=' + WS_BASE);
-        }
+        })();
 
         function apiUrl(p) { return API_BASE + p; }
         function wsUrl(t) { return WS_BASE + '/ws/' + t; }
@@ -2906,8 +2883,6 @@ class RealtimePlayer {
                 try { window.location.reload(); } catch (e) { window.location.href = window.location.pathname + window.location.search; }
             });
         }
-
-        loadConfig();
     </script>
 </body>
 </html>
