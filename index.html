@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Khojauhub</title>
+    <title>Khojauhub: Search & Rescue</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230066cc'/%3E%3Cpath d='M11 9.5v13l11-6.5z' fill='white'/%3E%3C/svg%3E">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2181,6 +2181,12 @@ class RealtimePlayer {
         if (urlInput) {
             let urlDebounce = null;
             let lastAutoSubmittedUrl = null;
+            const runBtn = document.getElementById('runBtn');
+            
+            function setRunButtonEnabled(enabled) {
+                if (runBtn) runBtn.disabled = !enabled;
+            }
+            
             urlInput.addEventListener('input', () => {
                 const url = urlInput.value.trim();
                 if (!url) {
@@ -2189,13 +2195,18 @@ class RealtimePlayer {
                     uploadTitle.textContent = t('uploadTitle');
                     uploadSubtitle.textContent = t('uploadSubtitle');
                     lastAutoSubmittedUrl = null;
+                    setRunButtonEnabled(false);
                     return;
                 }
-                if (!isValidUrl(url)) return;
+                if (!isValidUrl(url)) {
+                    setRunButtonEnabled(false);
+                    return;
+                }
                 if (urlDebounce) clearTimeout(urlDebounce);
                 urlDebounce = setTimeout(() => {
                     if (url !== lastAutoSubmittedUrl) {
                         fetchUrlPreview(url);
+                        setRunButtonEnabled(true);
                     }
                 }, 600);
             });
@@ -2206,11 +2217,23 @@ class RealtimePlayer {
                         uploadPreview.classList.remove('visible');
                         uploadZone.classList.remove('has-file');
                         lastAutoSubmittedUrl = null;
+                        setRunButtonEnabled(false);
                         return;
                     }
-                    if (isValidUrl(url)) fetchUrlPreview(url);
+                    if (isValidUrl(url)) {
+                        fetchUrlPreview(url);
+                        setRunButtonEnabled(true);
+                    }
                 }, 100);
             });
+            if (runBtn) {
+                runBtn.addEventListener('click', () => {
+                    const url = urlInput.value.trim();
+                    if (isValidUrl(url)) {
+                        handleUrlSubmit();
+                    }
+                });
+            }
         }
 
         async function handleUrlSubmit() {
@@ -2263,6 +2286,8 @@ class RealtimePlayer {
                         try {
                             const sres = await fetch(apiUrl(`/api/status/${currentTaskId}`));
                             const sdata = await sres.json();
+                            const msg = (sdata.message || '').toLowerCase();
+                            
                             if (sdata.message && sdata.message.startsWith('Downloading')) {
                                 const m = sdata.message.match(/Downloading\.\.\.\s*([0-9.]+)%/);
                                 const pct = m ? parseFloat(m[1]) : 0;
@@ -2270,7 +2295,7 @@ class RealtimePlayer {
                                 setUploadProgress({ loaded: pct * 1024 * 1024, total: 100 * 1024 * 1024, pct, rate: 0 });
                                 document.getElementById('uploadProgressLabel').textContent = t('urlDownloadPct', { pct: pct.toFixed(0) });
                                 if (eta && isFinite(eta)) document.getElementById('uploadProgressEta').textContent = `ETA ${formatTime(eta)}`;
-                            } else if (sdata.message && (sdata.message.includes('Ready for inference') || sdata.message.includes('Compression complete') || sdata.message.includes('Compression failed'))) {
+                            } else if (msg.includes('ready for inference') || msg.includes('compression complete') || msg.includes('compression failed') || msg.includes('complete')) {
                                 clearInterval(interval);
                                 resolve();
                             } else if (sdata.status === 'failed') {
@@ -2281,10 +2306,21 @@ class RealtimePlayer {
                     }, 500);
                 });
 
+                // Fallback timeout - if download doesn't complete in 5 minutes, proceed anyway
+                const downloadTimeout = new Promise((resolve) => {
+                    setTimeout(() => {
+                        console.warn('[url-mode] download timeout, proceeding anyway');
+                        resolve();
+                    }, 300000); // 5 minutes
+                });
+
+                await Promise.race([waitForDownload, downloadTimeout]);
+
                 await waitForDownload;
                 logToFrontend('Download complete. Starting inference…');
                 showStatus(t('infStarting'), 'info');
-                resetUploadProgress();
+                document.getElementById('uploadProgressLabel').textContent = 'Download complete';
+                document.getElementById('uploadProgressEta').textContent = '';
 
                 const inferRes = await fetch(apiUrl(`/api/infer/${currentTaskId}`), {
                     method: 'POST',
@@ -2305,11 +2341,31 @@ class RealtimePlayer {
                 startStatusPolling();
 
                 player = new RealtimePlayer();
-                player.attachFileUrl(apiUrl(`/videos/${currentTaskId}`));
+                const videoUrl = apiUrl(`/videos/${currentTaskId}`);
+                console.log('[url-mode] attaching video URL:', videoUrl);
+                player.attachFileUrl(videoUrl);
                 document.getElementById('previewSection').style.display = 'block';
                 document.getElementById('playerControls').style.display = 'block';
-                player.play();
-                player.startRecording();
+                document.getElementById('uploadProgressWrap').style.display = 'none';
+                
+                const videoEl = document.getElementById('playerVideo');
+                if (videoEl) {
+                    videoEl.addEventListener('loadedmetadata', () => {
+                        console.log('[url-mode] video metadata loaded, duration:', videoEl.duration);
+                        player.play();
+                        player.startRecording();
+                    });
+                    videoEl.addEventListener('error', (e) => {
+                        console.error('[url-mode] video load error:', e);
+                        const msg = videoEl.error && videoEl.error.message ? videoEl.error.message : 'Failed to load video.';
+                        showStatus(msg, 'error');
+                    });
+                    videoEl.load();
+                } else {
+                    console.error('[url-mode] playerVideo element not found');
+                    player.play();
+                    player.startRecording();
+                }
 
                 connectWebSocket(currentTaskId);
             } catch (e) {
