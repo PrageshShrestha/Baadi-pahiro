@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1533,6 +1534,11 @@
         let objectUrlForFile = null;
 
         (function initApiBase() {
+            const hostname = window.location.hostname;
+            if (hostname === 'khojauhub.com' || hostname === '') {
+                window.location.href = 'https://www.khojauhub.com' + window.location.pathname + window.location.search + window.location.hash;
+                return;
+            }
             API_BASE = window.location.origin;
             WS_BASE = API_BASE.replace(/^http:\/\//, 'ws://').replace(/^https:\/\//, 'wss://');
             console.log('[config] API_BASE=' + API_BASE + ', WS_BASE=' + WS_BASE);
