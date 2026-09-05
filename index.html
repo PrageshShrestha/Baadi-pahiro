@@ -290,7 +290,7 @@
         }
 
         .tile-upload .tile-inner {
-            max-height: 80vh;
+            min-height: 80vh;
             overflow-y: auto;
             padding-right: 6px;
         }
@@ -421,6 +421,36 @@
 
         .file-info.visible {
             display: block;
+        }
+
+        .url-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .url-input-row {
+            display: flex;
+            gap: 8px;
+        }
+        .url-input-row input[type="text"] {
+            flex: 1;
+            padding: 10px 12px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--divider-soft);
+            background: var(--canvas-parchment);
+            color: var(--ink-strong);
+            font-size: 14px;
+            font-family: var(--font-text);
+        }
+        .url-input-row input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        .url-error {
+            color: #ff3b30;
+            font-size: 12px;
+            margin-top: 4px;
         }
 
         .file-name {
@@ -1173,6 +1203,13 @@
                 <input type="file" id="fileInput" accept="image/*,video/*">
             </div>
 
+            <div class="url-section" id="urlSection" style="margin-top: 12px;">
+                <div class="url-input-row" style="display: flex; gap: 8px;">
+                    <input type="text" id="urlInput" placeholder="Paste TikTok / YouTube / Facebook link…" style="flex: 1; padding: 10px 12px; border-radius: var(--radius-md); border: 1px solid var(--divider-soft); background: var(--canvas-parchment); color: var(--ink-strong); font-size: 14px;">
+                </div>
+                <div id="urlError" style="color: #ff3b30; font-size: 12px; margin-top: 6px; display: none;"></div>
+            </div>
+
             <div class="model-section">
                 <div class="model-label">Detection Model</div>
                 <div class="model-cards">
@@ -1359,6 +1396,12 @@
                 downloadLarge: 'Your file is too big to preview. Tap below to download.',
                 uploadProgressLabel: 'Sending your file',
                 uploadLarge: 'Tap below to download the original file.',
+                urlPlaceholder: 'Paste TikTok / YouTube / Facebook link…',
+                urlDownloading: 'Downloading…',
+                urlDownloadPct: 'Downloading… {pct}%',
+                urlReady: 'Ready to scan',
+                urlInvalid: 'Please enter a valid URL',
+                urlFailed: 'Could not load that link. Please check the URL and try again.',
             },
             ne: {
                 tagline: 'आफ्नो भिडियोमा वस्तुहरू पत्ता लगाउनुहोस्',
@@ -1408,6 +1451,12 @@
                 downloadLarge: 'फाइल ठूलो भएकोले यहाँ हेर्न मिल्दैन। तल थिचेर डाउनलोड गर्नुहोस्।',
                 uploadProgressLabel: 'फाइल पठाउँदै',
                 uploadLarge: 'मूल फाइल डाउनलोड गर्न तल थिच्नुहोस्।',
+                urlPlaceholder: 'TikTok / YouTube / Facebook लिंक यहाँ राख्नुहोस्…',
+                urlDownloading: 'डाउनलोड हुँदै…',
+                urlDownloadPct: 'डाउनलोड हुँदै… {pct}%',
+                urlReady: 'स्क्यान गर्न तयार',
+                urlInvalid: 'कृपया वैध URL रोज्नुहोस्',
+                urlFailed: 'यो लिंक लोड गर्न सकिएन। कृपया URL जाँची फेरि प्रयास गर्नुहोस्।',
             },
         };
 
@@ -1578,7 +1627,16 @@ class RealtimePlayer {
                 this.ctx.clearRect(0, 0, this.overlay.width, this.overlay.height);
             }
 
-_onMeta() {
+            attachFileUrl(url) {
+                this.video.src = url;
+                this.video.muted = true;
+                this.entries = [];
+                this.lastIdx = -1;
+                this.duration = 0;
+                this.ctx.clearRect(0, 0, this.overlay.width, this.overlay.height);
+            }
+
+            _onMeta() {
                 const w = this.video.videoWidth || 1280;
                 const h = this.video.videoHeight || 720;
                 this.overlay.width = w;
@@ -2094,6 +2152,190 @@ _onMeta() {
                 }).catch(() => { uploadPreview.src = ''; });
             }
             updateUploadText();
+        }
+
+        const urlInput = document.getElementById('urlInput');
+        const urlSection = document.getElementById('urlSection');
+        const urlError = document.getElementById('urlError');
+
+        function showUrlError(msg) {
+            if (!urlError) return;
+            urlError.textContent = msg;
+            urlError.style.display = msg ? 'block' : 'none';
+        }
+
+        function isValidUrl(str) {
+            try { const u = new URL(str); return ['http:', 'https:'].includes(u.protocol); } catch { return false; }
+        }
+
+        async function fetchUrlPreview(url) {
+            if (!isValidUrl(url)) return;
+            try {
+                const res = await fetch(apiUrl(`/api/thumbnail?url=${encodeURIComponent(url)}`));
+                if (!res.ok) return;
+                const data = await res.json();
+                if (data.thumbnail_url) {
+                    uploadPreview.onload = () => {};
+                    uploadPreview.src = data.thumbnail_url;
+                    uploadPreview.classList.add('visible');
+                    uploadZone.classList.add('has-file');
+                    uploadTitle.textContent = t('urlReady');
+                    uploadSubtitle.textContent = url;
+                    // Auto-start inference after preview loads
+                    handleUrlSubmit();
+                }
+            } catch (e) {
+                // Silently fail - preview is optional
+            }
+        }
+
+        if (urlInput) {
+            let urlDebounce = null;
+            let lastAutoSubmittedUrl = null;
+            urlInput.addEventListener('input', () => {
+                const url = urlInput.value.trim();
+                if (!url) {
+                    uploadPreview.classList.remove('visible');
+                    uploadZone.classList.remove('has-file');
+                    uploadTitle.textContent = t('uploadTitle');
+                    uploadSubtitle.textContent = t('uploadSubtitle');
+                    lastAutoSubmittedUrl = null;
+                    return;
+                }
+                if (!isValidUrl(url)) return;
+                if (urlDebounce) clearTimeout(urlDebounce);
+                urlDebounce = setTimeout(() => {
+                    if (url !== lastAutoSubmittedUrl) {
+                        fetchUrlPreview(url);
+                    }
+                }, 600);
+            });
+            urlInput.addEventListener('paste', () => {
+                setTimeout(() => {
+                    const url = urlInput.value.trim();
+                    if (!url) {
+                        uploadPreview.classList.remove('visible');
+                        uploadZone.classList.remove('has-file');
+                        lastAutoSubmittedUrl = null;
+                        return;
+                    }
+                    if (isValidUrl(url)) fetchUrlPreview(url);
+                }, 100);
+            });
+        }
+
+        async function handleUrlSubmit() {
+            const url = (urlInput && urlInput.value || '').trim();
+            if (!url || !isValidUrl(url)) { showUrlError(t('urlInvalid')); return; }
+            showUrlError('');
+            if (!API_BASE) { showStatus(t('errConfig'), 'error'); return; }
+
+            const uploadTile = document.querySelector('.tile-upload');
+            setLoading(true);
+            if (uploadTile) uploadTile.classList.add('hidden');
+            resultsTile.classList.add('visible');
+            document.getElementById('uploadProgressWrap').style.display = 'block';
+            downloadSection.classList.remove('visible');
+
+            if (statusPollInterval) { clearInterval(statusPollInterval); statusPollInterval = null; }
+            if (ws) { try { ws.close(); } catch (e) {} ws = null; }
+            if (player) { player.reset(); player = null; }
+
+            selectedFile = null;
+            currentTaskId = null;
+            setUploadProgress({ loaded: 0, total: 0, pct: 0, rate: 0 });
+            document.getElementById('uploadProgressLabel').textContent = t('urlDownloading');
+
+            const logEl = document.getElementById('frontendLog');
+            const contentEl = document.getElementById('frontendLogContent');
+            if (logEl && contentEl) { contentEl.textContent = ''; logEl.style.display = 'none'; }
+            showStatus(t('urlDownloading'), 'info');
+
+            try {
+                const res = await fetch(apiUrl('/api/url-infer'), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        url: url,
+                        model_type: selectedModel,
+                        score_threshold: parseFloat(thresholdRange.value),
+                        iou_threshold: 0.45,
+                        slice_size: 416,
+                        overlap: 0.0,
+                    }),
+                });
+                if (!res.ok) { const err = await res.json(); throw new Error(err.detail || 'Failed to start URL download'); }
+                const data = await res.json();
+                currentTaskId = data.task_id;
+                logToFrontend('URL task created: ' + currentTaskId);
+
+                const waitForDownload = new Promise((resolve, reject) => {
+                    const interval = setInterval(async () => {
+                        try {
+                            const sres = await fetch(apiUrl(`/api/status/${currentTaskId}`));
+                            const sdata = await sres.json();
+                            if (sdata.message && sdata.message.startsWith('Downloading')) {
+                                const m = sdata.message.match(/Downloading\.\.\.\s*([0-9.]+)%/);
+                                const pct = m ? parseFloat(m[1]) : 0;
+                                const eta = sdata.eta_seconds;
+                                setUploadProgress({ loaded: pct * 1024 * 1024, total: 100 * 1024 * 1024, pct, rate: 0 });
+                                document.getElementById('uploadProgressLabel').textContent = t('urlDownloadPct', { pct: pct.toFixed(0) });
+                                if (eta && isFinite(eta)) document.getElementById('uploadProgressEta').textContent = `ETA ${formatTime(eta)}`;
+                            } else if (sdata.message && (sdata.message.includes('Ready for inference') || sdata.message.includes('Compression complete') || sdata.message.includes('Compression failed'))) {
+                                clearInterval(interval);
+                                resolve();
+                            } else if (sdata.status === 'failed') {
+                                clearInterval(interval);
+                                reject(new Error(sdata.message || 'Download failed'));
+                            }
+                        } catch (e) { /* ignore poll errors */ }
+                    }, 500);
+                });
+
+                await waitForDownload;
+                logToFrontend('Download complete. Starting inference…');
+                showStatus(t('infStarting'), 'info');
+                resetUploadProgress();
+
+                const inferRes = await fetch(apiUrl(`/api/infer/${currentTaskId}`), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model_type: selectedModel,
+                        score_threshold: parseFloat(thresholdRange.value),
+                        iou_threshold: 0.45,
+                        slice_size: 416,
+                        overlap: 0.0,
+                    }),
+                });
+                if (!inferRes.ok) { const err = await inferRes.json(); throw new Error(err.detail || 'Inference failed to start'); }
+                const inferData = await inferRes.json();
+                updateProgress(inferData);
+                logToFrontend('Inference started: ' + inferData.status);
+
+                startStatusPolling();
+
+                player = new RealtimePlayer();
+                player.attachFileUrl(apiUrl(`/videos/${currentTaskId}`));
+                document.getElementById('previewSection').style.display = 'block';
+                document.getElementById('playerControls').style.display = 'block';
+                player.play();
+                player.startRecording();
+
+                connectWebSocket(currentTaskId);
+            } catch (e) {
+                logToFrontend('Failed: ' + (e.message || 'URL load failed'));
+                showStatus(t('urlFailed'), 'error');
+                setLoading(false);
+                if (uploadTile) uploadTile.classList.remove('hidden');
+                resultsTile.classList.remove('visible');
+                document.getElementById('uploadProgressWrap').style.display = 'none';
+                showUrlError(e.message || t('urlFailed'));
+            }
+        }
+
+        if (urlInput) {
+            urlInput.addEventListener('keydown', e => { if (e.key === 'Enter') handleUrlSubmit(); });
         }
 
         function extractFirstFrame(file) {
